@@ -1015,24 +1015,24 @@ if __name__ == '__main__':
 			batchInput.batchInput (options ['batchInput'][0])
 
 		elif options.has_key ('getField'):
-			[tr_num, field] = options['getField']
-			print getField (tr_num, field)
+			[raw_tr_num, field] = options['getField']
+			print getField (raw_tr_num, field)
 
 		elif options.has_key ('setField'):
-			[tr_num, field, value] = options['setField']
-			setField (tr_num, field, value)
+			[raw_tr_num, field, value] = options['setField']
+			setField (raw_tr_num, field, value)
 
 		elif options.has_key ('addNote'):
-			[tr_num] = options['addNote']
-			addNote (tr_num)
+			[raw_tr_num] = options['addNote']
+			addNote (raw_tr_num)
 
 		elif options.has_key ('queryTitle'):
 			[value] = options['queryTitle']
 			print TrackRec.queryTitle (value)
 
 		elif options.has_key ('addNoteFromFile'):
-			[tr_num, filename] = options['addNoteFromFile']
-			addNoteFromFile (tr_num, filename)
+			[raw_tr_num, filename] = options['addNoteFromFile']
+			addNoteFromFile (raw_tr_num, filename)
 
 		elif options.has_key ('newMinimal'):
 			[title, status] = options['newMinimal']
