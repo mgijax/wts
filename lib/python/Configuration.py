@@ -193,17 +193,6 @@ class Configuration:
 
 		self.configuration = {}
 
-		# Identify the WTS_PATH, by using the environment variable
-		# if available (command-line) or looking for a relative path
-		# (web)
-
-		if os.environ.has_key ('WTS_PATH') and \
-				not os.environ.has_key ('HTTP_USER_AGENT'):
-			self.configuration ['WTS_PATH'] = \
-				os.environ['WTS_PATH']
-		else:
-			self.configuration ['WTS_PATH'] = getWtsPath()
-
 		# read the configuration file
 
 		try:
@@ -242,9 +231,16 @@ class Configuration:
 				raise error, 'Cannot parse config line: %s' % \
 					line
 
-		# get the database module from the specified directory
+		# add the library directories to the path:
 
-		sys.path.insert (0, self.configuration ['DBDIR'])
+		dirs = string.split (self.configuration['LIBDIRS'], ':')
+		dirs.reverse()
+		for dir in dirs:
+			if dir not in sys.path:
+				sys.path.insert (0, dir)
+
+		# get the database module
+
 		import db
 
 		# now, contact the database to get the rest of the
@@ -288,8 +284,3 @@ class Configuration:
 #--CODE EXECUTED ON IMPORT-----------------------------------------------
 
 config = Configuration ()		# instantiate a config object
-
-# add the library directory to the python path, so we can import other WTS
-# modules as needed:
-
-sys.path.insert (0, os.path.join (config['WTS_PATH'], 'lib/python'))
