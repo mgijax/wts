@@ -370,10 +370,10 @@ class Controlled_Vocab:
 		#	retired CV terms below a divider line.
 
 		active = self.ordered_names(0)
+		retired = []
 		if showAll:
 			retired = self.ordered_names(1)
 		elif len(selectedTerms) > 0:
-			retired = []
 			for term in self.ordered_names(1):
 				if term in selectedTerms:
 					retired.append (term)
