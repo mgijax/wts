@@ -30,7 +30,7 @@
 #		exc_type, exc_value, exc_traceback)
 #	send_Mail (send_from, send_to, subject,	message)
 #       dbValueString (value to format for inclusion in a sql query)
-#	parseCommandLine (argv, required options, optional options)
+#	parseCommandLine (argv, options)
 #	escapeAmps (string)
 #	isHTML (string)
 #	isPRE (string)
@@ -53,6 +53,12 @@ import db
 
 TRUE = 1
 FALSE = 0
+
+OPTIONS_OKAY = 0			# error codes for parseCommandLine()
+INVALID_SPECIFICATION = -1
+WRONG_ARGUMENTS = -2
+MISPLACED_ARGUMENT = -3
+MISSING_REQUIRED = -4
 
 error = 'wtslib.error'			# standard exception to be raised by
 					# the wtslib module
@@ -776,75 +782,124 @@ def dbValueString (x):
 		return str (x)
 
 
-def parseCommandLine (
-	argv,		# the complete sys.argv list
-	required,	# list of required fields (GNU format - strings)
-	optional	# list of optional fields (GNU format - strings)
+def splitCommandLineOptions (
+	argv			# full list of command line parameters
 	):
-	# Purpose: provide an abstract way of getting options from the command
-	#	line into a dictionary
-	# Returns: (dictionary of options ==> values, boolean error flag)
-	#	An error flag of 0 indicates no errors; a 1 means errors were
-	#	found.
-	# Assumes: "required" and "optional" are both lists of string.  If
-	#	either has no strings, it should be passed in as [].
-	# Effects: Steps through "argv" to pick out command line options and
-	#	any values specified with them.  This is mostly a wrapper for
-	#	getopt(), but it returns a dictionary for more flexible access
-	#	to the options.  In the dictionary, each option specified will
-	#	be a key and will reference its associated value or None if
-	#	it doesn't require a value.
+	# Purpose: process the command line in 'argv' so that quoted items
+	#	are part of the same command-line option
+	# Returns: list of strings
+	# Assumes: nothing
+	# Effects: nothing
 	# Throws: nothing
-	# Example: Let's consider a command line with the following options:
-	#		wts.screens.py [--dir <directory name][--home][--query]
-	#	To use parseCommandLine() to parse the input string for that
-	#	script, we would use:
-	#		(options, error_flag) = parseCommandLine (sys.argv,
-	#			[], [ 'dir=', 'home', 'query' ])
-	#	Then, if the user entered:
-	#		wts.screens.py --dir ~/public_html/wts --home
-	#	We would get back:
-	#		options = { 'dir' : '~/public_html/wts', 'home' : None }
-	#		error_flag = 0
+	# Example:
+	#	splitCommandLineOptions ( [ 'wts.py', '--setField',
+	#		'"this', 'is', 'my' ,'story"' ] )
+	#	returns:
+	#		[ 'wts.py', '--setField', 'this is my story' ]
 
-	# build a regular expression to extract the actual option name, without
-	# any preceding dashes or trailing equals signs
+	options = []		# list of options found so far
+	s = ''			# string to collect options
 
-	option_name = regex.compile ('-*\([a-zA-z0-9_]+\)=*')
+	for item in argv[1:]:
+		# if 's' is non-empty, then we are collecting a quoted item,
+		# so just add to it.  Otherwise, replace it.
 
-	dict = {}				# no options found so far
-	all_options = required + optional	# look for all options
-
-	# use getopt() to break up the command line into a list of tuples, each
-	# of which is (string option name, string option value)
-
-	try:
-		tuples, leftovers = getopt.getopt (argv [1:], '', all_options)
-	except getopt.error:
-		return (dict, 1)	# unrecognized options - bail out
-
-	if len (leftovers) > 0:		# if there are any extra options at the
-		return (dict, 1)	# end of the command line - bail out
-
-	# go through the list of tuples returned, and put them in a dictionary
-	# using the option name as the key
-
-	for (option, value) in tuples:
-		option_name.match (option)
-		if not dict.has_key (option_name.group (1)):
-			dict [option_name.group (1)] = value
+		if s:
+			s = '%s %s' % (s, item)
 		else:
-			return (dict, 1)	# found a duplicate option
+			s = item
 
-	# Now, make sure that all the required fields appear in "dict".  If we
-	# find one that does not - bail out.
+		if s[0] not in ('"', "'"):	# we don't have a quoted item
+			options.append (s)
+			s = ''
 
-	for option in required:
-		option_name.match (option)
-		if not dict.has_key (option_name.group (1)):
-			return (dict, 1)
+		elif s[0] == s[-1]:		# we completed a quoted item
+			options.append (s[1:-1])
+			s = ''
+	if s:
+		options = ['ERROR: Quote not closed']
+	return options
 
-	return (dict, 0)	# parsing completed successfully, no errors
+
+def parseCommandLine (
+	args,		# complete sys.argv list
+	options		# [ extended GNU-style option name, ... ]
+	):
+	# Purpose: parse the command-line 'args' according to an allowed set
+	#	of 'options'
+	# Returns: tuple containing (dictionary of options mapped to lists of
+	#	string arguments for each, integer error code)
+	# Assumes: nothing
+	# Effects: nothing
+	# Throws: nothing
+	# Notes:
+	#    extended GNU-style option name:
+	#	myOption	option only, no parameters
+	#	myOption=	option requires one parameter
+	#	myOption=n	option requires n parameters (n >= 0)
+	#	*myOption	option is required (can combine with =, =n)
+
+	re = regex.compile ('\(\*?\)'
+			'\([A-Za-z0-9_]+\)'
+			'\(.*\)'
+			)
+	optdict = {}		# dict maps option name -> # parms
+	required = []		# dict of required option names
+	specified = {}		# dict maps option name -> list of parms
+
+	# parse the list of valid options, each in extended GNU-style:
+
+	for opt in options:
+		if re.match (opt) != -1:
+			optrequired = re.group(1)
+			optname = re.group(2)
+			tail = re.group(3)
+		if optrequired:
+			required.append (optname)
+
+		count = 0
+		if tail:
+			if tail[0] == '=':
+				if len(tail) == 1:
+					count = 1
+				else:
+					try:
+						count = string.atoi (tail[1:])
+					except ValueError:
+						return specified, \
+							INVALID_SPECIFICATION
+		optdict ['--%s' % optname] = count
+
+	# go through args and pull the quoted items together...
+
+	myArgs = splitCommandLineOptions (args)
+
+	# now, go through the 'args' and build the dictionary of options
+	# and their respective arguments:
+
+	opt = ''		# the option for which we're collecting args
+	for arg in myArgs:
+		if optdict.has_key (arg):
+			opt = arg[2:]		# cut off the '--'
+			specified[opt] = []
+		elif not opt:
+			return specified, MISPLACED_ARGUMENT
+		else:
+			specified[opt].append (arg)
+
+	# are any required parameters missing?
+
+	for req in required:
+		if not specified.has_key ('--%s' % req):
+			return specified, MISSING_REQUIRED
+
+	# do any options have the wrong number of arguments
+
+	for opt in specified.keys():
+		if optdict['--%s' % opt] != len(specified[opt]):
+			return specified, WRONG_ARGUMENTS
+
+	return specified, OPTIONS_OKAY
 
 
 def escapeAmps (
