@@ -135,8 +135,6 @@ TR_OLD = 2	# internal constant to denote that our save method is for an
 PROJECT_DEFINITION = 2 		# type-code for the Project Definition
 PROGRESS_NOTES = 3		# type-code for the Progress Notes
 
-PROJECT_DEFINITION_TEMPLATE = 'data/definitionTemplate.html'
-
 PROJECT_DIR_GROUPING = 100	# number of project directories to group
 				# together under each parent directory
 
@@ -415,7 +413,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		#	TR_Number is non-None and a tracking record with that
 		#	TR # cannot be loaded from the database.
 
-		global ATTRIBUTES, PROJECT_DEFINITION_TEMPLATE
+		global ATTRIBUTES
 
 		# call parent's init
 
@@ -459,19 +457,20 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 			# Since we are dealing with a new tracking record, we
 			# should load the template for the Project Definition
-			# field.  The default template stored in a text file at:
-			#	PROJECT_DEFINITION_TEMPLATE
-			# We need to read that file and collect its contents in
-			# a variable (named 'definition_default') that we can
-			# then assign to the Project Definition field.
+			# field.  The default template stored in the
+			# WTS_Template table with a key given in the config
+			# file for PROJ_DEF_KEY.
+			# We need to read that field and collect its contents
+			# in a variable (named 'definition_default') that we
+			# can then assign to the Project Definition field.
 
-			fp = open (PROJECT_DEFINITION_TEMPLATE, 'r')
-			lines = fp.readlines ()
-			fp.close ()
-
-			definition_default = ''
-			for line in lines:
-				definition_default = definition_default + line
+			results = wtslib.sql (
+				'''select value
+				from WTS_Template
+				where _Template_key = %s''' % \
+					Configuration.config['PROJ_DEF_KEY'],
+					'auto')
+			definition_default = results[0]['value']
 
 			self.set_Values ( { 'Project Definition' :
 						definition_default } )
