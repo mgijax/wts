@@ -123,6 +123,21 @@ try:
 	form = cgi.FieldStorage ()			# input from GET / POST
 	dict = wtslib.FieldStorage_to_Dict (form)	# convert to dictionary
 
+	# Do a quick error check to see if we were called from the WTS Home
+	# Page as a result of the "Retrieve with Descendants" button by the
+	# "Find TR #" box.  If so, we need to make sure that we have something
+	# in the 'tr nr' field.
+
+	if os.environ.has_key ('HTTP_REFERER') and \
+		string.find (os.environ['HTTP_REFERER'], 'query.html') == -1 \
+		and len(dict) < 2:
+			screenlib.gen_Message_Screen (
+				'WTS: No Tracking Records to Display',
+				'''No records were selected for display.
+				Please press Ok to go back to the previous
+				screen.''', 1)
+			raise SystemExit
+
 	# Look for the special case in the input data:  If Staff or Requested By
 	# is set to be 'REMOTE_USER', then it is requesting that we fill in the
 	# remote user's name.  The need to do this arose from the quick-queries
@@ -233,5 +248,8 @@ try:
 
 	# if the entries were not valid, then we have already displayed an
 	# error screen.  So, we don't need an else clause.
+
+except SystemExit:
+	pass
 except:
 	screenlib.gen_Exception_Screen ('tr.query.results.cgi')
