@@ -68,7 +68,8 @@ try:
 
 	except TrackRec.alreadyLocked:
 		screenlib.gen_Message_Screen (
-			'WTS: Cannot Lock Tracking Record',
+			Configuration.config['PREFIX'] + \
+			': Cannot Lock Tracking Record',
 			'''The tracking record (TR #%d) is being edited and 
 			was %s.  Please press Ok to go back to the
 			Detail screen.''' % (tr_num, sys.exc_value))

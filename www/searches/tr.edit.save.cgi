@@ -118,7 +118,8 @@ try:
 		#	how many screens to go back if the user clicks Abort
 
 		doc = screenlib.Error_Screen (
-			title = 'WTS: Errors occurred in Edit Tracking Record')
+			title = Configuration.config['PREFIX'] + \
+				': Errors occurred in Edit Tracking Record')
 		doc.setup (error_list,
 			abort_cgi = '../cgi/tr.bailout.cgi',
 			tr_num = dict ['TR Nr'],

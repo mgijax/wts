@@ -134,7 +134,8 @@ try:
 		and len(dict) == 1 \
 		and dict_keys[0] == 'X Depends On':
 			screenlib.gen_Message_Screen (
-				'WTS: No Tracking Records to Display',
+				Configuration.config['PREFIX'] + \
+				': No Tracking Records to Display',
 				'''No records were selected for display.
 				Please press Ok to go back to the previous
 				screen.''', 1)

@@ -102,7 +102,8 @@ try:
 		# create the error screen
 
 		doc = screenlib.Error_Screen ( \
-			title = 'WTS: Errors occurred in ' + \
+			title = Configuration.config['PREFIX'] + \
+				': Errors occurred in ' + \
 				'New Tracking Record Entry')
 
 		# To setup the error screen, we need to give it a list of

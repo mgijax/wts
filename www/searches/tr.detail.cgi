@@ -82,7 +82,8 @@ try:
 
 	if not dict.has_key ('tr nr'):
 		screenlib.gen_Message_Screen (
-			'WTS: No Tracking Records to Display',
+			Configuration.config['PREFIX'] + 
+			': No Tracking Records to Display',
 			'No records were selected for display.  Please ' + \
 			'press Ok to go back to the previous screen.', 1)
 	else:
@@ -104,7 +105,8 @@ try:
 			tr_num = '(TR%s)' % string.split (tr_list)[0]
 
 			screenlib.gen_Message_Screen (
-				'WTS: Can''t Find Tracking Record',
+				Configuration.config['PREFIX'] + 
+				': Can''t Find Tracking Record',
 				('The specified tracking record %s ' % tr_num) \
 				+ 'does not exist.  Please press Ok to go ' + \
 				'back to the previous screen.', 1)
