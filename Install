@@ -121,7 +121,7 @@ echo "Generating HTML pages..."
 ./wts.screens.py --dir ../www --home
 ./wts.screens.py --dir ../www/searches --query
 ./wts.screens.py --dir ../www/searches --grid
-./wts.screens.py --dir ../www/userdocs/help --help
+#./wts.screens.py --dir ../www/userdocs/help --help
 cd $TOP
 
 # if this system has the needed binaries, genereate pdf versions of
@@ -160,3 +160,5 @@ cd admin
 echo "Generating security file"
 ./gen_htaccess.py
 cd $TOP
+
+echo "Do not forget to adjust www/data/wts.rc as needed if this is MASS-T"
