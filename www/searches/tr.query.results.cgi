@@ -128,9 +128,11 @@ try:
 	# "Find TR #" box.  If so, we need to make sure that we have something
 	# in the 'tr nr' field.
 
+	dict_keys = dict.keys()
 	if os.environ.has_key ('HTTP_REFERER') and \
 		string.find (os.environ['HTTP_REFERER'], 'query.html') == -1 \
-		and len(dict) < 2:
+		and len(dict) == 1 \
+		and dict_keys[0] == 'X Depends On':
 			screenlib.gen_Message_Screen (
 				'WTS: No Tracking Records to Display',
 				'''No records were selected for display.
