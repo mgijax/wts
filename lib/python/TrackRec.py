@@ -927,6 +927,18 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		route_to = CV ['CV_WTS_Category'].key_dict () [
 			CV ['CV_WTS_Category'].default_key () ]
 
+		# build lists of CV items selected
+
+		selArea = wtslib.string_To_List (self.data['Area'])
+		selType = wtslib.string_To_List (self.data['Type'])
+		selPriority = [self.data['Priority']]
+		selReqBy = wtslib.string_To_List (self.data['Requested By'])
+		selStatus = wtslib.string_To_List (self.data['Status'])
+		selSize = wtslib.string_To_List (self.data['Size'])
+		if self.data.has_key ('Staff'):
+			selStaff = wtslib.string_To_List (self.data['Staff'])
+		else:
+			selStaff = []
 
 		# first do the table with the quick summary information
 
@@ -976,16 +988,6 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					HTMLgen.Select (category_list,
 						name='Forwarding',
 						selected = [ "don't route" ]))))
-
-                # row 1 : TR # or Routing, current date and time
-
-#		summary_table.append (HTMLgen.TR (cell,
-#			HTMLgen.TD ( \
-#                                HTMLgen.Href (HELP_URL + HELP_FILES ['Date'],
-#					'Date'), \
-#				HTMLgen.Text (' '), \
-#				HTMLgen.Text (wtslib.current_Time ()))))
-
 		# row 2 : title
 
 		summary_table.append (HTMLgen.TR ( \
@@ -1012,23 +1014,19 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					'Area'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
-					CV ['CV_WTS_Area'].ordered_names(),
+					CV ['CV_WTS_Area'].pickList (selArea),
 					size = SELECT_ROWS, multiple=1, \
 					name='Area',
-					selected = wtslib.string_To_List ( \
-						self.data ['Area'])
-					) ), \
+					selected = selArea) ),
 			HTMLgen.TD ( \
                                 HTMLgen.Href (HELP_URL + HELP_FILES ['Type'],
 					'Type'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
-					CV ['CV_WTS_Type'].ordered_names(),
+					CV ['CV_WTS_Type'].pickList (selType),
 					size=SELECT_ROWS, multiple=1, \
 					name='Type',
-					selected = wtslib.string_To_List ( \
-						self.data ['Type'])
-					) ), \
+					selected = selType) ),
 			HTMLgen.TD ( \
                                 HTMLgen.Href (HELP_URL + \
                                         HELP_FILES ['Needs Attention By'],
@@ -1049,21 +1047,20 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
                                         HELP_FILES ['Priority'], 'Priority'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
-					CV ['CV_WTS_Priority'].ordered_names(),
-					name='Priority', selected = \
-					[self.data ['Priority']]) ), \
+					CV ['CV_WTS_Priority'].pickList ( \
+						selPriority),
+					name='Priority',
+					selected = selPriority)),
 			HTMLgen.TD ( \
                                 HTMLgen.Href (HELP_URL + \
                                         HELP_FILES ['Requested By'],
 					'Req By'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
-					CV ['CV_Staff'].ordered_names(),
+					CV ['CV_Staff'].pickList (selReqBy),
 					size=SELECT_ROWS, multiple=1, \
 					name='Requested_By',
-					selected = wtslib.string_To_List ( \
-						self.data ['Requested By']) \
-					) ) )
+					selected = selReqBy) ) )
 
 		# now, we need to do status, which has two components
 
@@ -1072,10 +1069,8 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 				'Status'), \
 			HTMLgen.BR (), \
 			HTMLgen.Select ( \
-				CV ['CV_WTS_Status'].ordered_names(), \
-				name='Status',
-				selected = wtslib.string_To_List ( \
-					self.data ['Status']) ), \
+				CV ['CV_WTS_Status'].pickList (selStatus),
+				name='Status', selected = selStatus),
 			HTMLgen.BR (),
                         HTMLgen.Href (HELP_URL + HELP_FILES ['Status Date'],
 				'Date'), \
@@ -1116,10 +1111,8 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		row3.append (HTMLgen.TD (
                         HTMLgen.Href (HELP_URL + HELP_FILES ['Size'], 'Size'),
 			HTMLgen.BR (),
-			HTMLgen.Select (CV ['CV_WTS_Size'].ordered_names(),
-				name='Size',
-				selected = wtslib.string_To_List ( \
-					self.data ['Size']) ) ) )
+			HTMLgen.Select (CV ['CV_WTS_Size'].pickList (selSize),
+				name='Size', selected = selSize) ) )
 
 		# second, add the Depends On field
 
@@ -1184,21 +1177,15 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		# row 4 : staff, and two blank squares
 
-                if self.data.has_key ('Staff'):
-			staff_members = wtslib.string_To_List ( \
-				self.data ['Staff'])
-                else:
-			staff_members = []
 		general_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
                                 HTMLgen.Href (HELP_URL + HELP_FILES ['Staff'],
 					'Staff'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
-					CV ['CV_Staff'].ordered_names(),
+					CV ['CV_Staff'].pickList(selStaff),
 					size=SELECT_ROWS, multiple=1, \
-					name='Staff', selected = \
-					staff_members) ), \
+					name='Staff', selected = selStaff)),
 			HTMLgen.TD ( \
 				HTMLgen.BR () ), \
 			HTMLgen.TD ( \
@@ -1294,7 +1281,8 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		DATE_SIZE = 20		# size of a date box
 
 		# get lists of terms from the controlled vocabulary objects for
-		# users, priorities, sizes, and routing categories
+		# users, priorities, sizes, and routing categories.  As this
+		# must be a new TR, just use the active terms (not retired).
 
 		CV = Controlled_Vocab.cv
 		user_list = CV ['CV_Staff'].ordered_names ()
@@ -3384,9 +3372,9 @@ def sort_results (
 				# sorted as specified in their *_order field.)
 
 				if sorting [i] in ['Priority','Status','Size']:
-					vocab_values = Controlled_Vocab.cv [ \
-						('CV_WTS_%s' % sorting [i]) \
-						].ordered_names ()
+					name = 'CV_WTS_%s' % sorting[i]
+					vocab_values = Controlled_Vocab.cv \
+						[name].pickList (showAll = 1)
 					value = vocab_values.index (value)
 
 				# if we're looking at this field for ascending
@@ -3768,9 +3756,9 @@ def validate_Query_Form (
 			values = []	# was not filled in, so ignore it
 
 		for key in values:
-			# since we may receive "any" as one of the "values",
-			# we need to be sure to query only with the valid CV
-			# items
+			# since we may receive "any" or a divider line
+			# ('-----') as one of the "values", we need to be sure
+			# to query only with the valid CV items
 
 			if this_cv[key] is not None:
 				if clean_string == '':
@@ -3966,7 +3954,10 @@ def validate_TrackRec_Entry (
 		clean_string = ''
 
 		for key in values:
-			if CV[item[1]][key] == None:
+			if key[:4] == '----':
+				pass		# skip selected divider lines
+
+			elif CV[item[1]][key] == None:
 
 				# the staff field may be blank.  if its value
 				# is 'None', just ignore it.  (This could happen

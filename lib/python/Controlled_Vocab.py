@@ -89,12 +89,12 @@ class Controlled_Vocab:
 		#	that the REMOTE_USER environment variable has been
 		#	defined
 		# Effects: sets self.def_key to be the default key, and sets
-		#	self.vocab to be a list of tuples (each with a string
-		#	name and its corresponding key).  Initializes (to None)
-		#	three object attributes which are computed only as
-		#	needed:
-		#	self.computed_key_dict, self.computed_name_dict, and
-		#	self.computed_ordered_names.
+		#	self.vocab and self.retired to be lists of tuples
+		#	(each with a string name and its corresponding key).
+		#	Initializes (to None) four object attributes which
+		#	are computed only as needed (pc == pre-computed):
+		#	self.pc_key_dict, self.pc_name_dict, and
+		#	self.pc_ordered_names, self.pc_ordered_retired.
 		# Throws: propagates wtslib.sqlError if there is a problem in
 		#	executing the database queries
 		# Example: CV = Controlled_Vocab ('CV_WTS_Size')
@@ -112,9 +112,9 @@ class Controlled_Vocab:
 			# sort by rough grouping (SA, SE, PI, editors, etc),
 			# then alphabetically within each group.
 
-			qry = '''select _Staff_key kee, staff_username txt
-				from CV_Staff order by staff_grouping,
-				staff_username'''
+			qry = '''select _Staff_key kee, staff_username txt,
+					active
+				from CV_Staff order by staff_username'''
 		else:
 			# get the table's default key from the system
 			# configuration
@@ -128,7 +128,7 @@ class Controlled_Vocab:
 			field_prefix = string.lower (table_name[7]) + \
 				table_name[8:]
 			qry = 'select _' + table_name[7:] + '_key kee, ' + \
-				field_prefix + '_name txt from ' + \
+				field_prefix + '_name txt, active from ' + \
 				table_name + ' order by ' + field_prefix + \
 				'_order'
 
@@ -136,27 +136,27 @@ class Controlled_Vocab:
 
 		results = wtslib.sql (qry)
 
-		# compile the results into a list of tuples.  Each tuple
+		# compile the results into two lists of tuples.  Each tuple
 		# represents a single controlled vocabulary item:
 		#	(string name value, integer key value)
 
-		tuples = []
+		self.vocab = []		# active vocab terms
+		self.retired = []	# retired vocab terms
 		for row in results:
-			tuples.append ( (row['txt'], row['kee']) )
-
-		# Note that the tuples are really the basic vocab itself.
-
-		self.vocab = tuples	# the raw vocab -- the list of tuples
-					# composed above.
+			if row['active']:
+				self.vocab.append ( (row['txt'], row['kee']) )
+			else:
+				self.retired.append ((row['txt'], row['kee']))
 
 		# These three fields are only computed if they are needed.  The
 		# first two are dictionaries which provide a quick-access way
 		# to map from names to keys and back.  The third is the list
 		# of names, in the order specified in the database.
 
-		self.computed_name_dict = None		# dict [names] --> keys
-		self.computed_key_dict = None		# dict [keys] --> names
-		self.computed_ordered_names = None	# ordered list of names
+		self.pc_name_dict = None	# dict [names] --> keys
+		self.pc_key_dict = None		# dict [keys] --> names
+		self.pc_ordered_names = None	# ordered list of names
+		self.pc_ordered_retired = None	# ordered list of retired names
 		return
 
 
@@ -169,19 +169,19 @@ class Controlled_Vocab:
 		#	no key is defined for "item"
 		# Assumes: nothing
 		# Effects: see Returns.  If we haven't already computed the
-		#	name-to-key dictionary (self.computed_name_dict), then
+		#	name-to-key dictionary (self.pc_name_dict), then
 		#	we do so now.
 		# Throws: nothing
 
 		# if we haven't already computed the name to key dictionary,
 		# then do it now...
 
-		if self.computed_name_dict is None:
+		if self.pc_name_dict is None:
 			self.name_dict ()	# computes and stores it
 
 		lowercase_item = string.lower (item)
-		if self.computed_name_dict.has_key (lowercase_item):
-			return self.computed_name_dict [lowercase_item]
+		if self.pc_name_dict.has_key (lowercase_item):
+			return self.pc_name_dict [lowercase_item]
 		else:
 			return None
 
@@ -192,7 +192,7 @@ class Controlled_Vocab:
 		#       name (item) which corresponds to it.  Otherwise, just
 		#       return None.
 		# Assumes: nothing
-		# Effects: causes self.computed_key_dict to be computed if it
+		# Effects: causes self.pc_key_dict to be computed if it
 		#       has not been already
 		# Throws: nothing
 		# Notes: nothing
@@ -200,11 +200,11 @@ class Controlled_Vocab:
 		# if we haven't already computed the key to name dictionary,
 		# then do it now...
 
-		if self.computed_key_dict is None:
+		if self.pc_key_dict is None:
 			self.key_dict ()        # computes and stores it
 
-		if self.computed_key_dict.has_key (key):
-			return self.computed_key_dict [key]
+		if self.pc_key_dict.has_key (key):
+			return self.pc_key_dict [key]
 		else:
 			return None
 
@@ -224,21 +224,21 @@ class Controlled_Vocab:
 		# Purpose: get a dictionary of keys mapped to string names
 		# Returns: a dictionary of key -> string name pairs
 		# Assumes: nothing
-		# Effects: ensures that "self.computed_key_dict" contains a
+		# Effects: ensures that "self.pc_key_dict" contains a
 		#	dictionary of keys mapped to string names, and then
 		#	returns a copy of that dictionary.
 		# Throws: nothing
 		# Notes: The key_dict is only computed once, and then is
-		#	remembered in "self.computed_key_dict".
+		#	remembered in "self.pc_key_dict".
 
 		# if we have not yet computed the key to name dictionary,
 		# then we need to compute it before we can return it.
 
-		if self.computed_key_dict is None:
-			self.computed_key_dict = {}
-			for tuple in self.vocab:
-				self.computed_key_dict [tuple[1]] = tuple[0]
-		return copy.deepcopy (self.computed_key_dict)
+		if self.pc_key_dict is None:
+			self.pc_key_dict = {}
+			for tuple in self.vocab + self.retired:
+				self.pc_key_dict [tuple[1]] = tuple[0]
+		return copy.deepcopy (self.pc_key_dict)
 
 
 	def name_dict (self):
@@ -246,53 +246,60 @@ class Controlled_Vocab:
 		#	to keys
 		# Returns: a dictionary of lowercase string name -> key pairs
 		# Assumes: nothing
-		# Effects: ensures that "self.computed_name_dict" contains a
+		# Effects: ensures that "self.pc_name_dict" contains a
 		#	dictionary of lowercase string names mapped to keys,
 		#	and then returns a copy of that dictionary.
 		# Throws: nothing
 		# Notes: The name_dict is only computed once, and then is
-		#	remembered in "self.computed_name_dict".
+		#	remembered in "self.pc_name_dict".
 
 		# if we have not yet computed the name to key dictionary,
 		# then we need to compute it before we can return it.
 
-		if self.computed_name_dict is None:
-			self.computed_name_dict = {}
-			for tuple in self.vocab:
-				self.computed_name_dict [ \
+		if self.pc_name_dict is None:
+			self.pc_name_dict = {}
+			for tuple in self.vocab + self.retired:
+				self.pc_name_dict [ \
 					string.lower (tuple[0]) ] = tuple[1]
-		return copy.deepcopy (self.computed_name_dict)
+		return copy.deepcopy (self.pc_name_dict)
 
 
-	def ordered_map (self):
+	def ordered_map (self, get_retired = 0):
 		# Purpose: get a list of (key, string name) tuples in order
-		# Returns: a copy of the list of (key, string name) tuples in
-		#	the order specified in the database
+		# Returns: set of active vocab items if get_retired == 0,
+		#	or a set of retired vocab items otherwise
 		# Assumes: nothing
 		# Effects: see Returns
 		# Throws: nothing
 
+		if get_retired:
+			return copy.deepcopy (self.retired)
 		return copy.deepcopy (self.vocab)
 
 
-	def ordered_names (self):
+	def ordered_names (self, get_retired = 0):
 		# Purpose: get a list of string names in proper order
-		# Returns: a list of string names in the order defined in the
-		#	database
+		# Returns: set of active vocab items if get_retired == 0,
+		#	or a set of retired vocab items otherwise
 		# Assumes: nothing
-		# Effects: ensures that "self.computed_ordered_names" contains
-		#	a list of string names, ordered according to the
-		#	ordering information in the database.  We then return a
-		#	copy of that list.
+		# Effects: Builds self.pc_ordered_name or
+		#	self.pc_ordered_retired as needed
 		# Throws: nothing
-		# Notes: We only compute this ordered list of string names once,
-		#	and then remember it in "self.computed_ordered_names".
+		# Notes: We only compute the lists of string names once, and
+		#	then remember them for use later.
 
-		if self.computed_ordered_names is None:
-			self.computed_ordered_names = []
-			for tuple in self.ordered_map ():
-				self.computed_ordered_names.append (tuple[0])
-		return copy.deepcopy (self.computed_ordered_names)
+		if get_retired:
+			if self.pc_ordered_retired is None:
+				self.pc_ordered_retired = []
+				for (item, key) in self.ordered_map(1):
+					self.pc_ordered_retired.append (item)
+			return copy.deepcopy (self.pc_ordered_retired)
+		else:
+			if self.pc_ordered_names is None:
+				self.pc_ordered_names = []
+				for (item, key) in self.ordered_map (0):
+					self.pc_ordered_names.append (item)
+			return copy.deepcopy (self.pc_ordered_names)
 
 
 	def validate (self,
@@ -349,6 +356,31 @@ class Controlled_Vocab:
 				error_flag = 1
 		return (keys, errors, error_flag)
 
+
+	def pickList (self, selectedTerms = [], showAll = 0):
+		# Purpose: build a list of strings for use in a selection box
+		# Returns: list of strings
+		# Assumes: nothing
+		# Effects: nothing
+		# Throws: nothing
+		# Notes: puts all active terms for this CV in order in the
+		#	list.  If any selectedTerms are retired, then we also
+		#	include a divider line and those terms in proper
+		#	order, or if showAll is non-zero then we include all
+		#	retired CV terms below a divider line.
+
+		active = self.ordered_names(0)
+		if showAll:
+			retired = self.ordered_names(1)
+		elif len(selectedTerms) > 0:
+			retired = []
+			for term in self.ordered_names(1):
+				if term in selectedTerms:
+					retired.append (term)
+		if len(retired) > 0:
+			active = active + [ '----------' ] + retired
+		return active
+
 ### End of Class: Controlled_Vocab ###
 
 #-MODULE FUNCTIONS-------------------------------------------------
@@ -376,8 +408,9 @@ def create_Include_File (
 
 	if table_name == 'CV_Staff':
 		columns = [ 'UserName' ]
-		qry = '''select staff_username UserName from CV_Staff order by
-			staff_grouping, staff_username'''
+		qry = '''select staff_username UserName, active
+			from CV_Staff
+			order by staff_username'''
 		results = wtslib.sql (qry)		# do the query
 
 	# We also need special handling for the CV_WTS_Category table, since
@@ -388,7 +421,7 @@ def create_Include_File (
 
 		columns = [ 'Value', 'Description', 'E-Mail', 'Staff' ]
 		qry = '''select category_name Value, category_description
-				Description
+				Description, active
 			from CV_WTS_Category
 			order by category_order'''
 		results = wtslib.sql (qry)		# do the query
@@ -411,10 +444,11 @@ def create_Include_File (
 
 		field_prefix = string.lower (table_name[7]) + \
 			table_name[8:]
-		qry = 'select ' + field_prefix + '_name Value, ' + \
-			field_prefix + '_description Description from ' + \
-			table_name + ' order by ' + field_prefix + \
-			'_order'
+		qry = '''select %s_name Value, %s_description Description,
+				active
+			from %s
+			order by %s_order''' % (field_prefix, field_prefix,
+				table_name, field_prefix)
 		columns = [ 'Value', 'Description' ]
 		results = wtslib.sql (qry)		# do the query
 	
@@ -423,20 +457,32 @@ def create_Include_File (
 	doc = HTMLgen.SeriesDocument (screenlib.RESOURCE_FILE, \
 		cgi = 0, title = 'WTS: Help - ' + name_for_user + \
 		' - Definitions')
-	tbl = HTMLgen.TableLite (border = 1, cell_padding = 5)
 
-	header_row = HTMLgen.TR ()
-	for col in columns:
-		header_row.append (HTMLgen.TH (col))
-	tbl.append (header_row)
+	# write a table of active terms followed by a table of retired terms
 
-	for row in results:
-		data_row = HTMLgen.TR ()
+	for (is_active, table_title) in \
+			[ (1, 'Current Terms'), (0, 'Retired Terms') ]:
+
+		tbl = HTMLgen.TableLite (border = 1, cell_padding = 5)
+
+		header_row = HTMLgen.TR ()
 		for col in columns:
-			data_row.append (HTMLgen.TD (row [col]))
-		tbl.append (data_row)
+			header_row.append (HTMLgen.TH (col))
+		tbl.append (header_row)
 
-	doc.append (tbl)
+		empty = 1
+		for row in results:
+			if row['active'] == is_active:
+				empty = 0
+				data_row = HTMLgen.TR ()
+				for col in columns:
+					data_row.append(HTMLgen.TD (row[col]))
+				tbl.append (data_row)
+		if empty == 0:
+			doc.append (HTMLgen.Bold (table_title))
+			doc.append (tbl)
+			doc.append (HTMLgen.P())
+
 	doc.write (pathname)
 
 
