@@ -1724,15 +1724,26 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
                 # now, pick the big text fields out of query 1
 
-		record ['project_definition'] = ''
-		record ['progress_notes'] = ''
-		for row in results [1]:
-			if row ['text_type'] == PROJECT_DEFINITION:
-				record ['project_definition'] = \
-					row ['text_block']
-			elif row ['text_type'] == PROGRESS_NOTES:
-				record ['progress_notes'] = row ['text_block']
+		record ['project_definition'] = getText (my_num,
+			PROJECT_DEFINITION)
+		record ['progress_notes'] = getText (my_num, PROGRESS_NOTES)
 
+# OLD:
+#	The above lines use the getText() function to read TEXT fields larger
+#	than 32k correctly.  To avoid changing too much code at this point,
+#	I've left the previous query intact.  In the future, we should cut the
+#	query from the list of them above, and adjust the code that parses the
+#	results from the queries which follow it.
+#
+#		record ['project_definition'] = ''
+#		record ['progress_notes'] = ''
+#		for row in results [1]:
+#			if row ['text_type'] == PROJECT_DEFINITION:
+#				record ['project_definition'] = \
+#					row ['text_block']
+#			elif row ['text_type'] == PROGRESS_NOTES:
+#				record ['progress_notes'] = row ['text_block']
+#
                 # now, get the status history info from query 2, starting with
 		# the current status...
 
@@ -5740,6 +5751,47 @@ def getTableWithTemplates (
 			colspan = 2) ))
 	return tbl
 
+def getText (
+	TR,		# string or integer; TR number
+	noteType	# integer; either PROJECT_DEFINITION or PROGRESS_NOTES
+	):
+	# Purpose: retrieve the full value of one of WTS's text fields, as
+	#	a standard SELECT statement will only return up to @@TEXTSIZE
+	#	characters (without even warning us if there are more!)
+	# Returns: string; or None if the given 'TR' does not have a note of
+	#	the given 'noteType'
+	# Assumes: nothing
+	# Effects: queries the database
+	# Throws: propagates any exceptions raised by wtslib.sql()
+
+	# determine the full length of the text field for the given 'TR'
+
+	results = wtslib.sql ('''select full = datalength(text_block)
+		from WTS_Text
+		where _TR_key = %s
+			and text_type = %s''' % (TR, noteType))
+	if not results:
+		return None	# the given 'TR' does not have that 'noteType'
+
+	full = results[0]['full']
+
+	# now retrieve the value of the field, little by little
+
+	soFar = ''
+	while len(soFar) < full:
+		nextGroup = min (32768, full - len(soFar))
+		results = wtslib.sql ( [
+			'set textsize 32768',
+			'declare @ptr varbinary(16)',
+			'''select @ptr = textptr(text_block)
+				from WTS_Text
+				where _TR_key = %s
+					and text_type = %s''' % (TR, noteType),
+			'readtext WTS_Text.text_block @ptr %s %s' % \
+				(len(soFar), nextGroup),
+			] )
+		soFar = soFar + results[2][0]['text_block']
+	return soFar
 
 #-SELF TESTING CODE---------------------------------------------------------
 
