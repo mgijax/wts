@@ -5758,8 +5758,8 @@ def getText (
 	# Purpose: retrieve the full value of one of WTS's text fields, as
 	#	a standard SELECT statement will only return up to @@TEXTSIZE
 	#	characters (without even warning us if there are more!)
-	# Returns: string; or None if the given 'TR' does not have a note of
-	#	the given 'noteType'
+	# Returns: string; the string is empty if the given 'TR' does not have
+	#	a note of the given 'noteType'
 	# Assumes: nothing
 	# Effects: queries the database
 	# Throws: propagates any exceptions raised by wtslib.sql()
@@ -5771,7 +5771,7 @@ def getText (
 		where _TR_key = %s
 			and text_type = %s''' % (TR, noteType))
 	if not results:
-		return None	# the given 'TR' does not have that 'noteType'
+		return ''	# the given 'TR' does not have that 'noteType'
 
 	full = results[0]['full']
 
