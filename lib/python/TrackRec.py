@@ -570,7 +570,13 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# Throws: nothing
 
 		num = self.num()
-		s = "TR %s -- http://titan/wts/searches/tr.detail.cgi?" % num
+		if os.environ.has_key ('HTTP_HOST'):
+			host = os.environ ['HTTP_HOST']
+		else:
+			host = 'titan'
+
+		s = "TR %s -- http://%s/wts/searches/tr.detail.cgi?" % \
+			(num, host)
 		s = s + "TR=%s\n\n" % num
 		s = s + ("Title:    %s\n" % self.data ['Title'])
 		s = s + ("Priority: %s\n\n" % self.data ['Priority'])
