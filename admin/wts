@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# this script simply changes to the wts/admin directory, executes the wts
+# command line with whatever parameters we received, and then changes back
+# to the previous directory when done.  This workaround was needed as a result
+# of directory restructuring with WTS 1.5.
+
+CURDIR=`pwd`
+cd /mgi/all/wts/admin
+wts.py $*
+cd $CURDIR
