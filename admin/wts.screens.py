@@ -1317,7 +1317,7 @@ def gen_StatusGrid_Form (
 
 	# add instructions
 
-	frm.append ('''This form allows you go generate a Status Grid based on
+	frm.append ('''This form allows you to generate a Status Grid based on
 		your chosen range of dates and type of analysis
 		(by ''',
 	HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'], 'Area'),
