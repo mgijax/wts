@@ -1,9 +1,11 @@
 # Resource file (for WTS) used by the Document class of the HTML module
 
 stylesheet = 'data/wts.css'
+#stylesheet = 'data/masst.css'
 author = 'The Jackson Laboratory'
 email = 'jsb@informatics.jax.org'
 bgcolor = '#FFFFFF'			# white
+#bgcolor = '#ccaaaa'			# pinkish
 textcolor = '#000000'			# black
 linkcolor = '#0000EE'			# blue
 vlinkcolor = '#990000'			# red
