@@ -104,13 +104,13 @@
 	may bookmark that URL or add it to a web page that you maintain.<P>
 	The base URL for doing a query is:
 <PRE>
-	http://titan/wts/cgi/tr.query.results.cgi
+	http://titan/wts/searches/tr.query.results.cgi
 </PRE>
 	You may then add fields and values after that base URL.  The first
 	specification should be preceded by a question mark (?), while others
 	are preceded by an ampersand (&amp;).  For example:
 <PRE>
-	http://titan/wts/cgi/tr.query.results.cgi?Staff=jsb&Status=new
+	http://titan/wts/searches/tr.query.results.cgi?Staff=jsb&Status=new
 </PRE>
 	Possible fields are indicated in the table below.  Please note that no
 	spaces are allowed, and that all field values are case-insensitive.<P>
@@ -203,14 +203,14 @@
 	</TABLE><P>
 	For example, to retrieve tracking records which are not done, cancelled,
 	or merged, and which are software fixes on the web, we could do:<P>
-	http://titan/wts/cgi/tr.query.results.cgi?Not=Status&Status=done,cancelled,merged&Type=swFix&Area=wi
+	http://titan/wts/searches/tr.query.results.cgi?Not=Status&Status=done,cancelled,merged&Type=swFix&Area=wi
 	<P><HR>
     <LI><B><a name="batchIO">How can I make changes to many tracking records
 	without stopping to edit each individually?</a></B><P>
 	As a result of changes made for tracking records
-	<a href="../cgi/tr.detail.cgi?TR_Nr=814">814</a>,
-	<a href="../cgi/tr.detail.cgi?TR_Nr=815">815</a>, and
-	<a href="../cgi/tr.detail.cgi?TR_Nr=816">816</a>, it is now possible to
+	<a href="../searches/tr.detail.cgi?TR_Nr=814">814</a>,
+	<a href="../searches/tr.detail.cgi?TR_Nr=815">815</a>, and
+	<a href="../searches/tr.detail.cgi?TR_Nr=816">816</a>, it is now possible to
 	do "batches" of input and output with WTS.  This could be a tremendous
 	timesaver when you need to do things like set the Status of all the
 	tracking records in a release to "done".<P>
