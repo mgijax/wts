@@ -1016,14 +1016,17 @@ if __name__ == '__main__':
 
 		elif options.has_key ('getField'):
 			[raw_tr_num, field] = options['getField']
+			tr_num = cleanTrackRecNumber (raw_tr_num)
 			print getField (raw_tr_num, field)
 
 		elif options.has_key ('setField'):
 			[raw_tr_num, field, value] = options['setField']
+			tr_num = cleanTrackRecNumber (raw_tr_num)
 			setField (raw_tr_num, field, value)
 
 		elif options.has_key ('addNote'):
 			[raw_tr_num] = options['addNote']
+			tr_num = cleanTrackRecNumber (raw_tr_num)
 			addNote (raw_tr_num)
 
 		elif options.has_key ('queryTitle'):
@@ -1032,6 +1035,7 @@ if __name__ == '__main__':
 
 		elif options.has_key ('addNoteFromFile'):
 			[raw_tr_num, filename] = options['addNoteFromFile']
+			tr_num = cleanTrackRecNumber (raw_tr_num)
 			addNoteFromFile (raw_tr_num, filename)
 
 		elif options.has_key ('newMinimal'):
