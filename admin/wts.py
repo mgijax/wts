@@ -49,23 +49,32 @@
 USAGE = \
 '''
 	wts has several command line formats:
-		wts --batchInput <filename>
+		wts --addNote <tr #>
+		wts --addNoteFromFile <tr #> <full path to file>
+		wts --batchInput <full path to file>
 		wts --dir <tr #>
 		wts --display <tr #>
 		wts --edit <tr #>
 		wts --fixTC <tr #>
+		wts --getField <tr #> <fieldname>
 		wts --locks
 		wts --new
 		wts --plainTree <tr #>
+		wts --queryTitle <query string>
 		wts --routing
+		wts --setField <tr #> <fieldname> <field value>
 		wts --tree <tr #>
 		wts --unlock <tr #>
+
+	For an explanation of these options, see the FAQ page in the WTS
+	web interface.
 '''
 
 import os
 import sys
 import string
 import tempfile
+import time
 
 # CGI programs set the REMOTE_USER environment variable automatically.  Since
 # this is a shell program, we need to define it manually here.  (Other WTS
@@ -84,7 +93,25 @@ import Template_File
 import Controlled_Vocab
 import Category
 
+error = 'WTS command-line error'
+
+###--- Exit Codes ---###
+
+ERR_UNLOCK = -1		# failed to unlock a TR
+ERR_DATABASE = -2	# error in querying / contacting the database
+ERR_READFILE = -3	# error in reading a file from the file system
+ERR_TR = -4		# error occurred while using the TrackRec module
+ERR_LOCKED = -5		# TR was already locked
+ERR_PARSING = -6	# error in parsing the TR Number specification
+ERR_MISSING = -7	# specified TR is not in the database
+
 # -- supporting functions --
+
+def error (message):
+	if type(message) == type(''):
+		message = [ message ]
+	sys.stderr.write (string.join (message, '\n') + '\n')
+	return
 
 def get_initial_char (
 	valid_chars	# a non-empty string containing characters which are to
@@ -233,9 +260,11 @@ def unlock_Tracking_Record (
 	except wtslib.sqlError:
 		# This should only occur in case of a database / server error.
 
-		print "An exception occurred in trying to unlock the tracking"
-		print "record.  The following message was returned:"
-		print sys.exc_value
+		error ( [ 'An exception occurred in trying to unlock the ',
+			'tracking record.  The following message was ',
+			'returned:',
+			sys.exc_value ] )
+		sys.exit (ERR_UNLOCK)
 	return
 
 
@@ -648,7 +677,8 @@ def showLocks ():
 			print format % row
 
 	except wtslib.sqlError:
-		print "Errors occurred while contacting the database"
+		error ("Errors occurred while contacting the database")
+		sys.exit (ERR_DATABASE)
 	return
 
 
@@ -733,13 +763,146 @@ def updateRouting (
 		'Category')
 	return
 
+def setField (
+	TR,		# string; valid TR #
+	field,		# string; fieldname from TrackRec.ATTRIBUTES
+	value		# string; what we want to set the value to
+	):
+	# Purpose: update the value of 'field' in the given 'TR'
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: updates the database
+	# Throws: propagates any exceptions raised
+	# Notes: We provide intelligent handling of '+' or '-' before the
+	#	terms of multi-valued controlled vocabulary fields
+
+	tr = TrackRec.TrackRec (TR)
+	if tr.setAttribute (field, value) == 0:
+		raise error, 'Failed -- could not set %s for %s' % (field, TR)
+
+	vals = TrackRec.validate_TrackRec_Entry (tr.dict())
+	tr.set_Values (vals)
+	tr.lock()
+	tr.save()
+	tr.unlock()
+
+	return
+
+
+def getField (
+	TR,		# string; valid TR #
+	field		# string; fieldname from TrackRec.ATTRIBUTES
+	):
+	# Purpose: retrieves the value of 'field' in the given 'TR'
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: queries the database
+	# Throws: propagates any exceptions raised
+
+	tr = TrackRec.TrackRec (TR)
+	return tr.getAttribute (field)
+
+
+def addNoteFromFile (
+	TR,		# string; valid TR number
+	filename	# full path to file to add as a note
+	):
+	# Purpose: add the contents of the file specified by 'filename' as a
+	#	date-stamped Progress Note for the given TR
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: updates database, reads from file system
+	# Throws: propagates any exceptions
+
+	tr = TrackRec.TrackRec (TR)
+	tr.lock()
+	try:
+		fp = open (filename, 'r')	# read the file
+		lines = fp.readlines()
+		fp.close()
+	except IOError:
+		error ("Cannot read input file '%s'" % filename)
+		sys.exit (ERR_READFILE)
+		return
+
+	entry = '''<LI><B>%s %s</B><BR>
+%s<P>
+''' % (time.strftime ("%m/%d/%y %H:%M", time.localtime (time.time())), \
+	os.environ['REMOTE_USER'],
+	string.join (lines, '')
+	)
+
+	notes = getField (TR, "Progress Notes")
+	if notes in [ '<PRE>\n\n</PRE>', '<PRE>\nNone\n</PRE>' ]:
+		notes = '<OL></OL>'
+
+	end = max (string.rfind(notes, '</OL>'), string.rfind(notes, '</ol>'))
+	if end != -1:
+		notes = notes[:end] + entry + notes[end:]
+	else:
+		notes = notes + entry
+	
+	tr.unlock()
+	setField (TR, "Progress Notes", notes)
+	print "Progress Notes for TR %s updated" % TR
+	return
+
+
+def addNote (
+	TR		# string; valid TR number
+	):
+	# Purpose: pop open the user's editor of choice with a temporary file
+	#	for entering a progress note, once he/she saves it, ask the
+	#	user if he/she wants to add the contents of the file as a
+	#	date-stamped Progress Note for the given TR
+	# Returns: nothing
+	# Assumes: nothing
+	# Effects: updates database, reads from file system, makes system call
+	#	to the editor
+	# Throws: propagates any exceptions
+	
+	tr = TrackRec.TrackRec (TR)
+	tr.lock()
+	locked = 1
+
+	tempfile.tempdir = "."		# work in current dir
+	tempfile.template = "note."	# filename stub
+	filename = tempfile.mktemp()	# generate a unique filename
+
+	os.system (getEditor() + ' ' + filename)
+
+	done = not os.path.exists (filename)
+	while not done:
+		print "Would you like WTS to..."
+		print "	Add the Progress Note,"
+		print "	Edit the file again, or"
+		print "	Cancel the addition?  (A/E/C)"
+
+		c = get_initial_char ('AEC')
+		if c == 'A':
+			tr.unlock()
+			locked = 0
+			addNoteFromFile (TR, filename)
+			done = 1
+		elif c == 'E':
+			os.system (getEditor() + ' ' + filename)
+		else:
+			done = 1
+	if os.path.exists (filename):
+		os.remove (filename)
+	if locked:
+		tr.unlock()
+	return
+
 
 # -- main program --
 
 if __name__ == '__main__':
-	options, error_flag = wtslib.parseCommandLine (sys.argv, [],
+	options, error_flag = wtslib.parseCommandLine (sys.argv,
 		[ 'dir=', 'display=', 'edit=', 'locks', 'new', 'unlock=',
-		  'fixTC=', 'tree=', 'simpleTree=', 'routing', 'batchInput=' ])
+		  'fixTC=', 'tree=', 'simpleTree=', 'routing', 'batchInput=',
+		  'getField=2', 'setField=3', 'addNote=',
+		  'queryTitle=', 'addNoteFromFile=2' ])
 	try:
 		# Now, because of the was the interface is defined, we can only
 		# handle one command at a time.  If we got too many or too few
@@ -754,36 +917,36 @@ if __name__ == '__main__':
 			new_Tracking_Record (tr)	# edit it
 
 		elif options.has_key ('display'):
-			raw_tr_num = options ['display']
+			raw_tr_num = options ['display'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			tr = TrackRec.TrackRec (tr_num)		# load and...
 			display_Tracking_Record (tr)		# display
 
 		elif options.has_key ('unlock'):
-			raw_tr_num = options ['unlock']
+			raw_tr_num = options ['unlock'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			tr = TrackRec.TrackRec (tr_num)		# load and...
 			unlock_Tracking_Record (tr)		# unlock
 
 		elif options.has_key ('edit'):
-			raw_tr_num = options ['edit']
+			raw_tr_num = options ['edit'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			tr = TrackRec.TrackRec (tr_num)		# load and...
 			edit_Tracking_Record (tr)		# edit
 
 		elif options.has_key ('fixTC'):
-			raw_tr_num = options ['fixTC']
+			raw_tr_num = options ['fixTC'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			fixClosure (tr_num)
 
 		elif options.has_key ('simpleTree'):
-			raw_tr_num = options ['simpleTree']
+			raw_tr_num = options ['simpleTree'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			for line in TrackRec.graphTree (tr_num, 0):
 				print line
 
 		elif options.has_key ('tree'):
-			raw_tr_num = options ['tree']
+			raw_tr_num = options ['tree'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			for line in TrackRec.graphTree (tr_num, 1):
 				print line
@@ -793,7 +956,7 @@ if __name__ == '__main__':
 
 		elif options.has_key ('dir'):
 			out_string = 'Project Directory for TR%d is: %s'
-			raw_tr_num = options ['dir']
+			raw_tr_num = options ['dir'][0]
 			tr_num = cleanTrackRecNumber (raw_tr_num)
 			base_dir = TrackRec.getBaseDir (tr_num)
 			if base_dir is None:
@@ -806,13 +969,46 @@ if __name__ == '__main__':
 			category = get_Category (
 				'Maintenance for which routing category:')
 			updateRouting (category)
+
 		elif options.has_key ('batchInput'):
-			batchInput.batchInput (options ['batchInput'])
+			batchInput.batchInput (options ['batchInput'][0])
+
+		elif options.has_key ('getField'):
+			[tr_num, field] = options['getField']
+			print getField (tr_num, field)
+
+		elif options.has_key ('setField'):
+			[tr_num, field, value] = options['setField']
+			setField (tr_num, field, value)
+
+		elif options.has_key ('addNote'):
+			[tr_num] = options['addNote']
+			addNote (tr_num)
+
+		elif options.has_key ('queryTitle'):
+			[value] = options['queryTitle']
+			print TrackRec.queryTitle (value)
+
+		elif options.has_key ('addNoteFromFile'):
+			[tr_num, filename] = options['addNoteFromFile']
+			addNoteFromFile (tr_num, filename)
+
 	except ValueError:
-		print "Cannot parse tracking record number %s" % raw_tr_num
+		error ("Cannot parse tracking record number %s" % raw_tr_num)
+		sys.exit (ERR_PARSING)
 
 	except TrackRec.alreadyLocked:
-		print "Tracking record TR%d was %s" % (tr_num, sys.exc_value)
+		error ("Tracking record TR%s was %s" % (tr_num,sys.exc_value))
+		sys.exit (ERR_LOCKED)
+
+	except TrackRec.error, message:
+		error (message)
+		sys.exit (ERR_TR)
 
 	except IOError:
-		print "Cannot open file '%s'" % options ['batchInput']
+		error ("Cannot open file '%s'" % options ['batchInput'][0])
+		sys.exit (ERR_READING)
+
+	except IndexError:
+		error ("Cannot find TR in database")
+		sys.exit (ERR_MISSING)
