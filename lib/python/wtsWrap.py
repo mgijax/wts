@@ -58,7 +58,8 @@ class WTS:
 		self.command = wts_cmd
 		self.environ = environ
 		if not os.path.exists (self.command):
-			raise error, '%s does not exist' % self.command
+			self.raiseException (error,
+				'%s does not exist' % self.command)
 		return
 
 	def addNote (self,
@@ -236,7 +237,22 @@ class WTS:
 			self.environ
 			)
 		if exitcode:
-			raise error, stderr
+			self.raiseException (error, stderr)
 		return stdout
+
+	def raiseException (self,
+		exception,	# string; the exception to raise
+		message		# string; the message to pass back with it
+		):
+		# Purpose: raise the given 'exception' and pass back the
+		#	given 'message' with it
+		# Returns: nothing
+		# Assumes: nothing
+		# Effects: see Purpose
+		# Throws: 'exception'
+		# Notes: Subclasses can override this as needed to map
+		#	wtsWrap.error to their own exceptions
+
+		raise exception, message
 
 ###--- END class WTS ---###
