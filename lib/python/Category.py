@@ -248,7 +248,8 @@ class Category:
 		# standard handling for Category-defined e-mails
 
 		if self.getEmail () is not None:
-			subject = "WTS: TR %s routed to: %s" % (tr.num (),
+			subject = Configuration.config['PREFIX'] + \
+				": TR %s routed to: %s" % (tr.num (),
 				self.getName ())
 			wtslib.send_Mail (from_whom, self.getEmail (), subject,
 				tr.getRoutingMessage ())
