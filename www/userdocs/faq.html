@@ -293,8 +293,24 @@
 	that is not defined either, it defaults to using 'vi'.<P>
 
 	Simply invoking <I>wts</I> with no arguments will give you the usage
-	options, of which there are currently nine:<P>
-	<UL>
+	options, of which there are currently sixteen:<P>
+	<OL>
+	<LI><I>wts --addNote &lt;tr #&gt;</I><BR>
+		Starts up your editor to let you type in the text of a
+		Progress Note.  When you save and exit the editor, WTS will
+		ask if you want to append the new entry to the Progress Notes.
+		WTS will prefix the note with a header line containing the
+		date, time, and username before adding it to the Progress
+		Notes.
+		<P>
+	<LI><I>wts --addNoteFromFile &lt;tr #&gt;</I>
+			&lt;full path to file&gt;<BR>
+		Reads the specified file and adds its contents to the
+		specified TR's Progress Notes.
+		WTS will prefix the note with a header line containing the
+		date, time, and username before adding it to the Progress
+		Notes.
+		<P>
 	<LI><I>wts --batchInput &lt;filename&gt;</I><BR>
 		Specifies a tab-delimited file to be read, parsed, and
 		processed as a batch of changes to multiple TRs.  (Discussed
@@ -315,6 +331,9 @@
 		Checks and (if there are problems) fixes the transitive closure
 		stored for the Depends On field for all tracking records related
 		to the one specified.<P>
+	<LI><I>wts --getField &lt;fieldname&gt; &lt;tr #&gt;</I><BR>
+		Sends to stdout the value of the requested fieldname for the
+		given TR.<P>
 	<LI><I>wts --locks</I><BR>
 		Displays a text table giving information about all the
 		tracking records which are currently locked.<P>
@@ -329,9 +348,22 @@
 		Sends to stdout a text representation of a tree showing all
 		the dependencies under the specified tracking record, with
 		only the TR # shown for each.<P>
+	<LI><I>wts --queryTitle &lt;query string&gt;</I><BR>
+		Allows you to query for a certain string in the Title field.
+		Sends to stdout a comma-separated list of TR numbers with
+		Titles which contain the specified string.<P>
 	<LI><I>wts --routing</I><BR>
 		Allows you to change the e-mail addresses and Areas associated
 		with the various routing categories.<P>
+	<LI><I>wts --setField &lt;fieldname&gt; &lt;tr #&gt; &lt;field
+			value&gt;</I><BR>
+		Replaces the current value of the named field in the given TR
+		with the value specified.  This is especially useful for
+		setting Status entries.  When dealing with multi-valued
+		controlled vocabulary fields, you may preface entries with a
+		+ to add them to the current list, or preface them with a -
+		to remove them from the current list.  (Rules follow those
+		given for the <CODE>--batchInput</CODE> option above.)<P>
 	<LI><I>wts --tree &lt;tr #&gt;</I><BR>
 		Sends to stdout a text representation of a tree showing all
 		the dependencies under the specified tracking record, with
@@ -340,7 +372,7 @@
 		Unlocks the tracking record with the specified key, no matter
 		who has it locked for editing.  This should only be used when
 		you know that a lock has persisted in error.<P>
-	</UL>
+	</OL>
 </OL>
 
 <P><HR>
