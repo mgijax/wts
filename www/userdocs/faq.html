@@ -27,6 +27,10 @@
     <LI><a href="#batchIO">How can I make changes to many tracking records
 	without stopping to edit each individually?</a>
     <LI><a href="#commandLine">How can I use the command-line interface?</a>
+    <LI><a href="#wtsMarkup">How do I use the WTS markup?</a>
+    <IMG SRC="../images/shared/new.gif" ALT="New!">
+    <LI><a href="#email">How do I update the progress notes field via e-mail?</a>
+    <IMG SRC="../images/shared/new.gif" ALT="New!">
 </OL>
 
 <HR>
@@ -60,42 +64,19 @@
 	tracking record?</a></B><P>
 	If you want to link to the detailed display of a tracking record from
 	within the Project Definition or Progress Notes field of another
-	tracking record, you can use the <I>tr.detail.cgi</I> script.  It takes
-	one parameter named "TR_Nr" which specifies the number of the tracking
-	record to which we want to link.  (The "TR_Nr" is case insensitive.)<P>
-	For example, to link to the detailed display for TR 37, you could use:
-	<P>
-	&lt;A HREF="tr.detail.cgi?TR_Nr=37"&gt; See the detailed display of
-	TR 37 &lt;/A&gt;
+	tracking record, you should use <a href=#wtsMarkup>WTS markup</a>.
 	<P><HR>
     <LI><B><a name="dir.cgi1">How can I link to the project directory of a
 	tracking record?</a></B><P>
 	If you want to link to the project directory of a tracking record from
 	within the Project Definition or Progress Notes field of a tracking
-	record, you can use the <I>dir.cgi</I> script.  It takes two parameters,
-	both of which have case-insensitive names.  The first parameter, named
-	"TR_Nr", specifies the number of the tracking record whose project
-	directory we want to view.  The second parameter, "doc" is not used in
-	this scenario.<P>
-	For example, to link to the project directory for TR 37, you could use:
-	<P>
-	&lt;A HREF="dir.cgi?TR_Nr=37"&gt; See the project directory for TR 37
-	&lt;/A&gt;
+	record, you should use <a href=#wtsMarkup>WTS markup</a>.
 	<P><HR>
     <LI><B><a name="dir.cgi2">How can I link to a file in the project directory
 	of a tracking record?<a/></B><P>
 	If you want to link to a file in the project directory of a tracking
 	record from within the Project Definition or Progress Notes field of a
-	tracking record, you can use the <I>dir.cgi</I> script.  It takes two
-	parameters, both of which have case-insensitive names.  The first
-	parameter, named "TR_Nr", specifies the number of the tracking record
-	whose project directory we want to look in.  The second parameter, "doc"
-	specifies the name of the file (case sensitive) to open.<P>
-	For example, to link to the requirements.html file in the project
-	directory for TR 37, you could use:
-	<P>
-	&lt;A HREF="dir.cgi?TR_Nr=37&amp;doc=requirements.html"&gt; See the
-	requirements doc for TR 37 &lt;/A&gt;
+	tracking record, you should use <a href=#wtsMarkup>WTS markup</a>.
 	<P><HR>
     <LI><B><a name="cannedQueries">How can I preserve common queries, so I won't
 	need to compose them from the Query Form each time?</a></B><P>
@@ -368,10 +349,62 @@
 		who has it locked for editing.  This should only be used when
 		you know that a lock has persisted in error.<P>
 	</OL>
+	 <LI><B><a name="wtsMarkup">How do I use WTS markup?</a></B><P>
+	 	WTS markup allows the user to enter one of several different markup codes
+	 	into either the problem description field or the progress notes.
+	 	Submitting the TR to the server, the markup is converted to a URL based upon
+	 	which tag was used.  Supported tags include:<BR><BR>
+
+		<UL>
+			<LI>\TR(TR_NUMBER)  creates a link to the main tracking record page
+			specified by TR_NUMBER.<BR>
+			<LI>\File(TR_NUMBER,FILE_NAME) creates a link to FILE_NAME within
+			TR_NUMBER’s directory.<BR>
+			<LI>\Dir(TR_NUMBER) creates a link to TR_NUMBER’s directory.<BR>
+			<LI>\URL(VALID_URL) creates a link to the URL specified by VALID_URL.
+			Note that the protocol must be specified.  I.E. http://www.yahoo.com
+			or ftp://ftp.informatics.jax.org.<BR><BR>
+		</UL>
+
+		The behavior of nested markup, (I.E. \File(\TR(101),foo.txt)) is undefined.
+	 </PRE>
+	 <LI><B><a name="email">How do I update the progress notes field via
+	 	     e-mail?</a></B><P>
+	 WTS Email allows a user to enter messages into the progress notes of a given
+	 TR by sending email to WTS on Titan.  The body of the email will be appended
+	 to the current progress notes with a timestamp and the user id of the sender
+	 of the email.  To specify the TR, you would put "TR 1001" in your subject
+	 line if you wanted to pick TR 1001.<BR><BR>
+
+	 <B>Sample email:</B><BR><BR>
+<PRE>
+To: Jon Beal <jsb@titan>,
+    Jim Kadin <jak@titan>,
+    wts@titan
+Cc:
+Attchmnt:
+Subject: TR 3791
+</PRE>
+	 ----- Message Text -----<BR>
+	 I've completed implementation of this TR and am awaiting a code review.<BR><BR>
+
+	 --<BR>
+	 Josh Winslow (jw@informatics.jax.org)<BR>
+	 Scientific Software Engineer<BR>
+	 The Jackson Laboratory<BR>
+	 600 Main Street<BR>
+	 Bar Harbor, ME  04609<BR>
+	 (207) 288-6021<BR><BR>
+
+	 <B>The progress notes would be updated as follows:</B><BR><BR>
+
+	 Thu Jun 27 14:26:15 EDT 2002 jw<BR><BR>
+	 I've completed implementation of this TR and am awaiting a code review.
+
 </OL>
 
 <P><HR>
-<BR><IMG src="../common/logo.gif" height="0" width="0" alt="logo.gif" align="bottom">
+<BR><IMG SRC="../images/shared/jax_logo.gif" ALT="The Jackson Lab" align="bottom">
 <FONT SIZE="-1"><P>Copyright &#169 The Jackson Laboratory<BR>All Rights Reserved<BR>
 
 Comments to author: <A HREF="mailto:jsb@informatics.jax.org">jsb@informatics.jax.org</A><br>

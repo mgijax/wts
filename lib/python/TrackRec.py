@@ -29,7 +29,9 @@
 #	directoryURL (dir)
 #	expand_TR_Range (range, key)			- internal use only
 #	expand_TR (tr numbers, key)			- internal use only
+#	expandWTSMarkup(field)
 #	getStatusTable (row_type, date_range)
+#	getText(TR,noteType)
 #	opposite (item)
 #	parse_And_Merge (list of Query_Row_Dict, key name)
 #	queryTitle (query string)
@@ -910,7 +912,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			HTMLgen.Bold ('Project Definition:')) )
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.RawText (
-			self.data ['Project Definition']) )
+			expandWTSMarkup(self.data ['Project Definition']) ))
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.BR () )
 
@@ -919,7 +921,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		objects.append ( HTMLgen.Href (HELP_URL % 'Progress_Notes',
 			HTMLgen.Bold ('Progress Notes:')) )
 		objects.append ( HTMLgen.BR () )
-		objects.append ( HTMLgen.RawText (self.data ['Progress Notes']))
+		objects.append ( HTMLgen.RawText (expandWTSMarkup(self.data ['Progress Notes'])))
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.BR () )
 
@@ -1413,7 +1415,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		suggestions = [ 'Machine Name', 'Query Name and Values',
 			'Web Form', 'Editing Interface Screen',
-			'Particulary Fieldname', 'Exact Messages Displayed',
+			'Particular Fieldname', 'Exact Messages Displayed',
 			'Your Intentions' ]
 
 		data_table = HTMLgen.TableLite (border=1, \
@@ -1949,7 +1951,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 			# if the parent directory does not yet exist, create it,
 			# turn on its sticky bit, and set the group to 'mgi'
-
+			
 			if not os.path.exists (parent_path):
 				os.mkdir (parent_path)
 				os.chmod (parent_path, 0755)	# rwxr-xr-x
@@ -4146,7 +4148,7 @@ def validate_TrackRec_Entry (
 
 			raw [fieldname] = regsub.gsub (chr (015), '',
 				raw [fieldname])
-
+				
 			# if there are no HTML tags, then wrap the text in
 			# <PRE> and </PRE>
 
@@ -4258,7 +4260,7 @@ def save_WTS_TrackRec (
 
 	if str (values ['directory_variable']) <> 'None':
 		re = regex.compile (
-			'[A-Za-z: "=<>/_]*'	# skip everything before we...
+			'[~A-Za-z: "=<>/_]*'	# skip everything before we...
 			'\([/0-9]+\)'		# get the numerical directories
 			)
 		re.match (values ['directory_variable'])
@@ -4286,7 +4288,7 @@ def save_WTS_TrackRec (
 			wtslib.duplicated_DoubleQuotes (values ['tr_title']) \
 			+ '", getdate(), getdate(), '
 
-		if str (values ['attention_by']) <> 'None':
+		if str (values ['attention_by']) not in ('None',''):
 			qry = qry + '"' + values ['attention_by'] + '", '
 		else:
 			qry = qry + ' null, '
@@ -4319,7 +4321,7 @@ def save_WTS_TrackRec (
 		if proj_dir is not None:
 			qry = qry + (', directory_variable = "%s"' % proj_dir)
 
-		if str (values ['attention_by']) <> 'None':
+		if str (values ['attention_by']) not in ('None',''):
 			qry = qry + (', attention_by = "%s"' % \
 					values ['attention_by'])
 		else:
@@ -5801,6 +5803,105 @@ def getText (
 			] )
 		soFar = soFar + results[2][0]['text_block']
 	return soFar
+
+#These define the acceptable WTS markup.  Note the 4 \s.
+WTS_MARKUP_TR = '\\\\TR('
+WTS_MARKUP_FILE = '\\\\File('
+WTS_MARKUP_DIR = '\\\\Dir('
+WTS_MARKUP_URL = '\\\\URL('
+
+
+# Purpose: To generate a regular expression based on the markup passed in and
+#	the number of args that markup uses.
+# Returns: A string containing a regular expression begining with the markup
+#	and containing groups around everything between commas.
+# Assumes: argNum>=1
+# Effects: A string is generated and returned
+# Throws: nothing
+def generateWTSMarkupRegEx(
+	markup,
+	argNum
+	):
+	
+	getTextToComma = '\([^,]+\),'
+	getTextToParen = '\([^)]+\))'
+	
+	regEx = markup 
+	while(argNum > 1) :
+		regEx = regEx + getTextToComma
+		argNum = argNum - 1
+	regEx = regEx + getTextToParen
+	return regEx
+
+
+# Purpose: Generate html tags based on the markup and args passed in.
+# Returns: If the tag isn't defined here, an empty string, otherwise
+#	it returns the approriate html, in string format, for the markup.
+# Assumes: nothing
+# Effects: Generates html for the given markup.
+# Throws: nothing
+# Notes:
+def generateWTSMarkupHTML(
+	markup, 
+	args	#compiled regex which has matched.
+	):
+	
+	anchorStart = '<a href="'
+	startClose = '">'
+	anchorEnd = '</a>'
+	
+	if markup == WTS_MARKUP_TR :
+		myhtml = anchorStart + 'tr.detail.cgi?TR=' + args.group(1) + \
+			 startClose + 'TR' + args.group(1) + anchorEnd
+	elif markup == WTS_MARKUP_FILE :
+		myhtml = anchorStart + 'dir.cgi?TR=' + args.group(1) + '&doc='\
+			 + args.group(2) + startClose + args.group(2) + \
+			 anchorEnd
+	elif markup == WTS_MARKUP_DIR :
+			myhtml = anchorStart + 'dir.cgi?TR=' + args.group(1) \
+			+ startClose + 'TR' + args.group(1) + '\'s directory'\
+			+ anchorEnd
+	elif markup == WTS_MARKUP_URL :
+			myhtml = anchorStart + args.group(1) + startClose + \
+			args.group(1) + anchorEnd			
+	else: myhtml = ''
+	return myhtml
+
+
+# Purpose: Converts the WTS markup tags into html within the field
+# Returns: The field which was passed in with all of the markup converted.
+# Assumes: nothing
+# Effects: Any text matching the markup definitions above will be converted 
+# 	into html.
+# Throws: nothing
+# Notes: The behavior of nested tags, IE \TR(\File(123,foo.txt)) is undefined.
+def expandWTSMarkup (
+	field	# string; The text that contains the markup
+	):
+	
+	#The markup text followed by the number of args
+	markupTable = [ (WTS_MARKUP_TR, 1),
+			(WTS_MARKUP_FILE, 2),
+			(WTS_MARKUP_DIR,1), 
+			(WTS_MARKUP_URL,1)
+		      ]
+	
+	#for each of our defined markup types
+	for (markup,argNum) in markupTable :
+		#generate a regular expression which takes into account the
+		#number of args and the tag name.
+		rgxp = generateWTSMarkupRegEx(markup,argNum)
+		p = regex.compile(rgxp)
+		r = p.search(field)
+		#as long as there is markup of this type left in the field
+		while r > -1 :
+			#convert it to html
+			html = generateWTSMarkupHTML(markup,p)
+			if html != '' :
+				field = field[:p.regs[0][0]] + html +\
+				field[p.regs[0][1]:]		
+			r = p.search(field,r+len(html))
+	return field
 
 #-SELF TESTING CODE---------------------------------------------------------
 

@@ -23,11 +23,14 @@ function timestamp() {
 	year = String(now.getYear());
 	if (year.length > 2)
 		year = year.slice (year.length - 2);
+	min = now.getMinutes();
+	if (min<10)
+		min = "0"+min;
 	return (now.getMonth() + 1) + "/" +
 		now.getDate() + "/" +
 		year + " " +
 		now.getHours() + ":" +
-		now.getMinutes();
+		min;
 	}
 
 function undoNotes (
@@ -51,7 +54,7 @@ function undoNotes (
 function doSubstitutions (s, tr_nr) {
 	var t = s;
 	t = t.replace (/.timestamp./, timestamp());
-	t = t.replace (/.TR./, tr_nr);
+	t = t.replace (/\.TR\./, tr_nr);
 	return t;
 	}
 

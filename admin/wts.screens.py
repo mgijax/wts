@@ -147,7 +147,7 @@ def gen_Home_Page (
 
 	doc = screenlib.WTS_Document (cgi = 0,	# this document will go to a
 						# file, not a CGI response,
-		title = PREFIX + ': Home Page')	# with specified title.
+		title = PREFIX + ': Home')	# with specified title.
 
 	# section 1 - Reviewing Tracking Records
 	#	add a horizontal rule and then a centered heading
