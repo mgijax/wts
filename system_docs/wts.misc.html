@@ -1,0 +1,102 @@
+<HTML>
+<HEAD>
+<TITLE>WTS: Miscellaneous Concerns</TITLE>
+</HEAD>
+<BODY>
+
+<CENTER>
+<H3>WTS: Miscellaneous Concerns</H3>
+Jonathan Beal<BR>
+January 6, 1999<BR>
+<small>slightly updated 5/18/00</small><P>
+</CENTER>
+
+<HR>
+<CENTER>
+<B><a name="Config">Configuration Usage</a></B><BR>
+</CENTER><P>
+The Configuration.py module will instantiate a Configuration object named
+config when it is imported.  All modules (and cgi) which import Configuration
+should reference this object rather than creating one of their own.  (to save
+effort spent creating many Configuration objects as needed)<P>
+The Configuration.py module also initializes the <a name="dbInit">db</a> module
+when it is first imported.<P>
+<HR>
+<CENTER>
+<B><a name="QueryProcess">How do TrackRec queries become result
+screens?</a></B><BR>
+</CENTER><P>
+The process by which we go from a query form to a result set form is really
+quite convoluted, but we'll take a shot at explaining it below...
+<PRE>
+    Query Form
+	|
+	| sends filled-in query fieldnames (in nice_fieldname form)
+	| and values to...
+	|
+    tr.query.results.cgi
+		|
+		| produces a Raw_Query_Dict which is then passed to...
+		|
+	TrackRec.validate_Query_Form
+		|
+		| produce a Clean_Query_Dict which is then passed to...
+		|
+	TrackRec.build_And_Run_SQL
+		|
+		| converts fieldnames to be in database_fieldname
+		| format, and then uses the dictionary to build and
+		| run a query.  This produces a list of dictionaries,
+		| which is sent to...
+		|
+	TrackRec.parse_And_Merge
+		|
+		| converts fieldnames back to nice_fieldname format, and
+		| collects values into a Result_Set with one row per
+		| tracking record.  This Result_Set is then processed...
+		|
+	by tr.query.results.cgi to produce the table in the TR Query
+	Result Summary Screen
+</PRE><P>
+<HR>
+<CENTER>
+<B><a name="Dicts">TrackRec Dictionaries</a></B><BR>
+</CENTER><P>
+Dictionaries are heavily used throughout the code for the TrackRec class,
+especially in the class methods.  Each can be thought of as a new data
+type, though we won't implement them that way at this point.  They are
+named and defined below, to save confusion in the TrackRec definition:
+<P>
+<TABLE BORDER CELLPADDING=5>
+	<TR><TH>Name<TH>Description
+	<TR><TD>Raw_TR_Dict
+		<TD>input dictionary of attribute -> string value mappings for
+		a TrackRec object.  All attribute names and values have not
+		yet been validated.  (Attribute names are of the object
+		fieldname format)
+	<TR><TD>Clean_TR_Dict
+		<TD>dictionary of attribute -> string value mappings for a
+		TrackRec object.  All attribute names and values have been
+		validated.  (Attribute names are of the object fieldname format)
+	<TR><TD>Raw_Query_Dict
+		<TD>dictionary of attribute -> value mappings from the Query
+		Form.  These attribute names and values have not been validated.
+		(Attribute names are of the object fieldname format)  Probably
+		will not contain all possible tracking record attributes.
+	<TR><TD>Clean_Query_Dict
+		<TD>dictionary of attribute -> value mappings from the Query
+		Form which have been validated.  (Attribute names are of the
+		object fieldname format)  Probably will not contain all possible
+		tracking record attributes.
+	<TR><TD>Query_Row_Dict
+		<TD>dictionary of attribute -> value mappings for a single
+		row returned by a query.  Since these come from the database,
+		we know that all attribute names and values are valid.
+		(Attribute names are of the database fieldname format)  A
+		Query_Row_Dict will not necessarily contain all the fields
+		for a single tracking record, but rather only those requested
+		in the query.
+</TABLE>
+<HR>
+</BODY>
+</HTML>

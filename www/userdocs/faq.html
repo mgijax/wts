@@ -1,0 +1,353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<!-- This file generated using Python HTMLgen module. -->
+<HEAD>
+  <META NAME="GENERATOR" CONTENT="HTMLgen 2.0.6">
+        <TITLE>WTS: Frequently Asked Questions</TITLE>
+
+<LINK rel=stylesheet href="data/wts.css" type=text/css title="data/wts.css">
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#000099" VLINK="#0C0C0C">
+<H3>WTS: Frequently Asked Questions</H3>
+<HR>
+<OL>
+    <LI><a href="#brackets">How can I display angle brackets ( &lt; &gt; ) in a
+    	tracking record?</a>
+    <LI><a href="#MSIE">Should I use Microsoft Internet Explorer to access
+	WTS?</a>
+    <LI><a href="#tr.display.cgi">How can I link to the detailed display of a
+	tracking record?</a>
+    <LI><a href="#dir.cgi1">How can I link to the project directory of a
+	tracking record?</a>
+    <LI><a href="#dir.cgi2">How can I link to a file in the project directory
+	of a tracking record?</a>
+    <LI><a href="#cannedQueries">How can I preserve common queries, so I won't
+	need to compose them from the Query Form each time?</a>
+    <LI><a href="#batchIO">How can I make changes to many tracking records
+	without stopping to edit each individually?</a>
+    <LI><a href="#commandLine">How can I use the command-line interface?</a>
+</OL>
+
+<HR>
+
+<OL>
+    <LI><B><a name="brackets">How can I display angle brackets ( &lt; &gt; ) in
+    	a tracking record?</a></B><P>
+	Several characters have special meaning to HTML, including &amp;, &gt;,
+	and &lt;.  When browser receives these characters, it attempts to
+	"interpret" them -- it tries to use their special meaning.  If you just
+	want them to appear as-is in your tracking record, you need to send out
+	a special code instead.  Just use the code from the following table
+	whenever you want one of those characters:<P>
+	<TABLE BORDER CELLPADDING=5>
+	  <TR><TH>To see a...<TH>Type in a...
+	  <TR><TD>&lt;<TD>&amp;lt;
+	  <TR><TD>&gt;<TD>&amp;gt;
+	  <TR><TD>&amp;<TD>&amp;amp;
+	</TABLE><P><HR>
+    <LI><B><a name="MSIE">Should I use Microsoft Internet Explorer to access
+	WTS?</a></B><P>
+	In general, <I>no</I>.  IE has a few quirks when editing tracking
+	records that could make it difficult for you.  Due to the way IE
+	caches web pages, you could experience problems with locking tracking
+	records.  IE also will not automatically reload the detail page of an
+	edited tracking record.<P>
+	If all you do is query and display tracking records, then you could
+	probably use MS IE.  If you do any editing, however, it would be better
+	to use Netscape.<P><HR>
+    <LI><B><a name="tr.display.cgi">How can I link to the detailed display of a
+	tracking record?</a></B><P>
+	If you want to link to the detailed display of a tracking record from
+	within the Project Definition or Progress Notes field of another
+	tracking record, you can use the <I>tr.detail.cgi</I> script.  It takes
+	one parameter named "TR_Nr" which specifies the number of the tracking
+	record to which we want to link.  (The "TR_Nr" is case insensitive.)<P>
+	For example, to link to the detailed display for TR 37, you could use:
+	<P>
+	&lt;A HREF="tr.detail.cgi?TR_Nr=37"&gt; See the detailed display of
+	TR 37 &lt;/A&gt;
+	<P><HR>
+    <LI><B><a name="dir.cgi1">How can I link to the project directory of a
+	tracking record?</a></B><P>
+	If you want to link to the project directory of a tracking record from
+	within the Project Definition or Progress Notes field of a tracking
+	record, you can use the <I>dir.cgi</I> script.  It takes two parameters,
+	both of which have case-insensitive names.  The first parameter, named
+	"TR_Nr", specifies the number of the tracking record whose project
+	directory we want to view.  The second parameter, "doc" is not used in
+	this scenario.<P>
+	For example, to link to the project directory for TR 37, you could use:
+	<P>
+	&lt;A HREF="dir.cgi?TR_Nr=37"&gt; See the project directory for TR 37
+	&lt;/A&gt;
+	<P><HR>
+    <LI><B><a name="dir.cgi2">How can I link to a file in the project directory
+	of a tracking record?<a/></B><P>
+	If you want to link to a file in the project directory of a tracking
+	record from within the Project Definition or Progress Notes field of a
+	tracking record, you can use the <I>dir.cgi</I> script.  It takes two
+	parameters, both of which have case-insensitive names.  The first
+	parameter, named "TR_Nr", specifies the number of the tracking record
+	whose project directory we want to look in.  The second parameter, "doc"
+	specifies the name of the file (case sensitive) to open.<P>
+	For example, to link to the requirements.html file in the project
+	directory for TR 37, you could use:
+	<P>
+	&lt;A HREF="dir.cgi?TR_Nr=37&amp;doc=requirements.html"&gt; See the
+	requirements doc for TR 37 &lt;/A&gt;
+	<P><HR>
+    <LI><B><a name="cannedQueries">How can I preserve common queries, so I won't
+	need to compose them from the Query Form each time?</a></B><P>
+	It is now possible to do any query as a GET submission; that is, you
+	can do a query with all the parameters specified in a URL.  Then, you
+	may bookmark that URL or add it to a web page that you maintain.<P>
+	The base URL for doing a query is:
+<PRE>
+	http://titan/wts/cgi/tr.query.results.cgi
+</PRE>
+	You may then add fields and values after that base URL.  The first
+	specification should be preceded by a question mark (?), while others
+	are preceded by an ampersand (&amp;).  For example:
+<PRE>
+	http://titan/wts/cgi/tr.query.results.cgi?Staff=jsb&Status=new
+</PRE>
+	Possible fields are indicated in the table below.  Please note that no
+	spaces are allowed, and that all field values are case-insensitive.<P>
+	<TABLE border>
+	<TR><TH>Field<TH>Allowed Values<TH>Example
+	<TR><TD>Area
+	    <TD>comma-separated list of Areas
+	    <TD>Area=wi,wts,edInt
+	<TR><TD>Depends_On_X
+	    <TD>1 (if you want to show those which depend on those in the
+	    	results)
+	    <TD>Depends_On_X=1
+	<TR><TD>Displays
+	    <TD>comma-separated list of fields to show, chosen from:  TR_Nr,
+		Title, Area, Type, Needs_Attention_By, Priority, Requested_By,
+		Status, Status_Date, Size, Staff, Directory, and
+		Modification_Date
+	    <TD>Displays=TR_Nr,Title,Area,Type,Status
+	<TR><TD>Modification_Date
+	    <TD>date range (no times)
+	    <TD>6/15/99..6/30/99
+	<TR><TD>Needs_Attention_By
+	    <TD>date range (no times)
+	    <TD>6/15/99..6/30/99
+	<TR><TD>Not
+	    <TD>comma-separated list of fields to which we should apply the
+		"not" operator, chosen from:  Area, Type, Priority, Status, and
+		Size
+	    <TD>Not=Area,Type
+	<TR><TD>Primary
+	    <TD>field to use for primary sorting, chosen from: TR_Nr,
+		Title, Area, Type, Needs_Attention_By, Priority, Requested_By,
+		Status, Status_Date, Size, Staff, and Modification_Date
+	    <TD>Primary=Status
+	<TR><TD>Primary_Order
+	    <TD>asc or desc, indicating whether to sort Primary in ascending or
+		descending order
+	    <TD>Primary_Order=asc
+	<TR><TD>Priority
+	    <TD>comma-separated list of Priorities
+	    <TD>Priority=emergency,high
+	<TR><TD>Requested_By
+	    <TD>comma-separated list of staff members
+	    <TD>Requested_By=jsb,dab,jms
+	<TR><TD>Secondary
+	    <TD>field to use for secondary sorting (use only if also specifying
+		Primary), chosen from: TR_Nr,
+		Title, Area, Type, Needs_Attention_By, Priority, Requested_By,
+		Status, Status_Date, Size, Staff, and Modification_Date
+	    <TD>Secondary=Area
+	<TR><TD>Secondary_Order
+	    <TD>asc or desc, indicating whether to sort Secondary in ascending
+	    	or descending order
+	    <TD>Secondary_Order=asc
+	<TR><TD>Size
+	    <TD>comma-separated list of Sizes
+	    <TD>tiny,small
+	<TR><TD>Staff
+	    <TD>comma-separated list of staff members
+	    <TD>Staff=jsb,dab,jms
+	<TR><TD>Status
+	    <TD>comma-separated list of Statuses
+	    <TD>Status=done,cancelled,merged
+	<TR><TD>Tertiary
+	    <TD>field to use for tertiary sorting (use only if also specifying
+		Primary and Secondary), chosen from: TR_Nr,
+		Title, Area, Type, Needs_Attention_By, Priority, Requested_By,
+		Status, Status_Date, Size, Staff, and Modification_Date
+	    <TD>Tertiary=TR_Nr
+	<TR><TD>Tertiary_Order
+	    <TD>asc or desc, indicating whether to sort Tertiary in ascending or
+		descending order
+	    <TD>Tertiary_Order=asc
+	<TR><TD>Text_Fields
+	    <TD>string of characters
+	    <TD>Text_Fields=geneaologies
+	<TR><TD>Title
+	    <TD>string of characters
+	    <TD>Title=MLC
+	<TR><TD>TR
+	    <TD>comma-separated list of TR numbers
+	    <TD>TR=500,700..705,715
+	<TR><TD>Type
+	    <TD>comma-separated list of Types
+	    <TD>Type=swFix,swEnhance
+	<TR><TD>X_Depends_On
+	    <TD>1 (if you want to show those depended on by those in the
+	    	results)
+	    <TD>X_Depends_On=1
+	</TABLE><P>
+	For example, to retrieve tracking records which are not done, cancelled,
+	or merged, and which are software fixes on the web, we could do:<P>
+	http://titan/wts/cgi/tr.query.results.cgi?Not=Status&Status=done,cancelled,merged&Type=swFix&Area=wi
+	<P><HR>
+    <LI><B><a name="batchIO">How can I make changes to many tracking records
+	without stopping to edit each individually?</a></B><P>
+	As a result of changes made for tracking records
+	<a href="../cgi/tr.detail.cgi?TR_Nr=814">814</a>,
+	<a href="../cgi/tr.detail.cgi?TR_Nr=815">815</a>, and
+	<a href="../cgi/tr.detail.cgi?TR_Nr=816">816</a>, it is now possible to
+	do "batches" of input and output with WTS.  This could be a tremendous
+	timesaver when you need to do things like set the Status of all the
+	tracking records in a release to "done".<P>
+	The typical way to make changes using a batch is:
+	<OL>
+	<LI>On the Query Form, set up a query which shows the fields you may
+		want to change, and which returns a desired set of TRs.
+	<LI>On the Query Results page, check off those TRs you want to change,
+		and click the "As Text" button.
+	<LI>Use the <I>File | Save As...</I> option to save the tab-delimited
+		file that is generated.
+	<LI>Use your favorite editor to edit that tab-delimited file.
+	<LI>If the file is not already available from titan, use ftp or fetch
+		to put it somewhere under your home directory.
+	<LI>Login to titan via rsh or telnet.
+	<LI>Change to the directory containing the tab-delimited file.
+	<LI>Use the "<CODE>wts.py --batchInput &lt;filename&gt;</CODE>" option
+		of the command line interface to load the file.
+	<LI>Data lines without errors will have their changes committed to WTS.
+	<LI>For data lines with errors, the error messages will be sent to
+		stderr with the format:
+<PRE>
+	&lt;date & time of error&gt;
+	&lt;data line which caused the error&gt;
+	&lt;error messages, one per line&gt;
+ 	&lt;blank line&gt;
+</PRE>
+	<LI>Edit the data file to fix any errors, and re-run the
+	"<CODE>wts.py --batchInput &lt;filename&gt;</CODE>" command.
+	</OL><P>
+	Notes:
+	<OL>
+	<LI>Changes made to the Directory, Modification Date,
+		Project Definition, and Progress Notes fields are ignored.
+	<LI>If a field is allowed multiple values (Area, Type, Staff, and
+		Requested By), you may add or delete values by using a + or
+		- before each.
+	<LI>If you use a + or - for at least one item in a field's value, then
+		you must use a + or - before each value specified.
+	<LI>If you do not use a + or - when specifying a field's value, the old
+		value will be replaced by a specified value.
+	<LI>If you do not specify a value for a field, there will be no change
+		to that field.
+	<LI>It is possible to use a single data line for several TRs by using
+		a comma-separated list of TR numbers.
+	<LI>TR Nr should always be the leftmost field in the file.
+	</OL><P>
+	As an example, consider the following data file:
+<PRE>
+	TR Nr	Status	Staff
+	500	done	-jsb, +rpp, +gtc
+	501	new
+	502,503		jcg, gld, pm
+</PRE>
+	When this data file is batch loaded, the following changes occur:
+	<UL>
+	<LI>TR500 will have its Status set to "done", and will remove
+		"jsb" from the Staff field, while adding "rpp" and "gtc".
+	<LI>TR501 will have its Status set to "new", with no Staff changes.
+	<LI>TR502 will set its Staff field to be "jcg, gld, pm", with no change
+		in Status.
+	<LI>TR503 will set its Staff field to be "jcg, gld, pm", with no change
+		in Status.
+	</UL>
+	<P><HR>
+    <LI><B><a name="commandLine">How can I use the command-line interface?</a>
+	</B><P>
+	The command-line interface is run on titan.  It requires that two
+	environment variables be set properly:
+	<PRE>
+	WTS_PATH	/mgi/all/wts
+	SYBASE		/opt/sybase
+	</PRE>
+	If you want to run the command-line interface from outside the
+	$WTS_PATH/admin directory, you can add $WTS_PATH/admin to your path.<P>
+
+	The command-line interface allows you to choose an editor for WTS by
+	specifying its full path in the WTS_EDITOR environment variable.  If
+	that isn't defined, WTS looks for the EDITOR environment variable.  It
+	that is not defined either, it defaults to using 'vi'.<P>
+
+	Simply invoking <I>wts.py</I> with no arguments will give you the
+	usage options, of which there are currently nine:<P>
+	<UL>
+	<LI><I>wts.py --batchInput &lt;filename&gt;</I><BR>
+		Specifies a tab-delimited file to be read, parsed, and
+		processed as a batch of changes to multiple TRs.  (Discussed
+		in more detail in a separate FAQ entry)<P>
+	<LI><I>wts.py --dir &lt;tr #&gt;</I><BR>
+		Finds and prints the name of the project directory for the
+		specified tracking record number.<P>
+	<LI><I>wts.py --display &lt;tr #&gt;</I><BR>
+		Displays a text representation of the tracking record with the
+		specified number.<P>
+	<LI><I>wts.py --edit &lt;tr #&gt;</I><BR>
+		Loads the specified tracking record, sends a text
+		representation of it to a file, starts up your editor, and loads
+		in that file for you.  Once you are done editing and quit the
+		editor, WTS asks if you want to import the new info from the
+		file back into the database.<P>
+	<LI><I>wts.py --fixTC &lt;tr #&gt;</I><BR>
+		Checks and (if there are problems) fixes the transitive closure
+		stored for the Depends On field for all tracking records related
+		to the one specified.<P>
+	<LI><I>wts.py --locks</I><BR>
+		Displays a text table giving information about all the
+		tracking records which are currently locked.<P>
+	<LI><I>wts.py --new</I><BR>
+		Creates a blank tracking record, sends a text representation of
+		it to a file, starts up your editor, and loads in that file for
+		you.  Once you are done editing and quit the editor, WTS asks
+		if you want to import the new info from the file back into the
+		database.  Note that nothing is saved to the database unless
+		you decide (Yes) to import the information.<P>
+	<LI><I>wts.py --plainTree &lt;tr #&gt;</I><BR>
+		Sends to stdout a text representation of a tree showing all
+		the dependencies under the specified tracking record, with
+		only the TR # shown for each.<P>
+	<LI><I>wts.py --routing</I><BR>
+		Allows you to change the e-mail addresses and Areas associated
+		with the various routing categories.<P>
+	<LI><I>wts.py --tree &lt;tr #&gt;</I><BR>
+		Sends to stdout a text representation of a tree showing all
+		the dependencies under the specified tracking record, with
+		the TR # and Title shown for each.<P>
+	<LI><I>wts.py --unlock &lt;tr #&gt;</I><BR>
+		Unlocks the tracking record with the specified key, no matter
+		who has it locked for editing.  This should only be used when
+		you know that a lock has persisted in error.<P>
+	</UL>
+</OL>
+
+<P><HR>
+<BR><IMG src="../common/logo.gif" height="0" width="0" alt="logo.gif" align="bottom">
+<FONT SIZE="-1"><P>Copyright &#169 The Jackson Laboratory<BR>All Rights Reserved<BR>
+
+Comments to author: <A HREF="mailto:jsb@informatics.jax.org">jsb@informatics.jax.org</A><br>
+Generated: Wed Nov 18 1998 <BR><hr>
+</FONT>
+</BODY> </HTML>

@@ -1,0 +1,76 @@
+<HTML>
+<HEAD>
+<TITLE>Class Hierarchy for WTS</TITLE>
+</HEAD>
+<BODY>
+<CENTER><H3>Class Hierarchy for WTS</H3></CENTER>
+<HR>
+<CENTER><H4>Data Classes</H4></CENTER>
+<PRE>
+Arc
+
+ArcSet
+
+Category
+
+Configuration
+
+Controlled_Vocab
+
+Digraph
+
+HTGroup
+
+HTPassword
+
+Set
+
+TabFile
+
+Template_File
+
+WriteLock
+
+WTS_DB_Object
+	*
+	*** TrackRec
+</PRE>
+<HR>
+<CENTER><H4>Output Classes</H4></CENTER>
+<PRE>
+Button
+
+MetaList
+
+WTS_Form
+
+WTS_Document
+	*
+	*** Error_Screen			# general purpose
+	*
+	*** Exception_Screen
+	*
+	*** GoBack_Screen
+	*
+	*** GoTo_Screen
+	*
+	*** Message_Screen
+	*
+	*** Password_Screen			# for changing WTS passwords
+	*
+	*** TrackRec_ShortForm_Screen		# tracking record-related
+	*
+	*** New_TrackRec_Screen
+	*
+	*** TR_Notification_Screen
+	*
+	*** TrackRec_Detail_Screen
+	*
+	*** TrackRec_Edit_Screen
+	*
+	*** Query_Result_Screen			# TR query-related
+	*
+	*** Status_Grid_Screen
+</PRE>
+</BODY>
+</HTML>

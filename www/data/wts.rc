@@ -1,0 +1,23 @@
+# Resource file (for WTS) used by the Document class of the HTML module
+
+stylesheet = 'data/wts.css'
+author = 'The Jackson Laboratory'
+email = 'jsb@informatics.jax.org'
+bgcolor = '#FFFFFF'			# white
+textcolor = '#000000'			# black
+linkcolor = '#0000EE'			# blue
+vlinkcolor = '#990000'			# red
+banner = None
+title = 'WTS: Work Tracking System'
+background = None
+place_nav_buttons = 0
+logo = ('data/logo.gif',0,0)
+
+# Other options we do not use:
+#
+# blank = ('../image/blank.gif', 66, 22)
+# prev = ('../image/back.gif', 66, 22)
+# next = ('../image/next.gif', 66, 22)
+# top = ('../image/top.gif', 66, 22)
+# home = ('../image/home.gif', 66, 22)
+# background = '../image/bg-dots.gif'

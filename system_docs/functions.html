@@ -1,0 +1,200 @@
+<HTML>
+<HEAD>
+<TITLE>WTS: Common Functions</TITLE>
+</HEAD>
+<BODY>
+
+<CENTER>
+<H3>WTS: Common Functions</H3>
+Jonathan Beal<BR>
+July 29, 1999<P>
+</CENTER>
+
+<UL>
+<LI><H4><a name='wtslib.py'>wtslib.py</a> - general functions for WTS</H4>
+	<OL>
+	<LI><B>current_Time ()</B>
+		<UL>
+		<LI><I>returns:</I> a string containing the current date & time
+		<LI><I>purpose:</I> returns a string containing the date and
+			time in the format "mm/dd/yyyy hh:mm PM"
+		</UL><P>
+	<LI><B>dbValueString (item to convert)</B>
+		<UL>
+		<LI><I>returns:</I> a string which gives the value of the item
+			in a sybase-friendly manner
+		<LI><I>purpose:</I> converts None to "Null", duplicates any
+			included double-quotes in strings, and generates a
+			string representation for any other types
+		</UL><P>
+	<LI><B>duplicated_DoubleQuotes (string)</B>
+		<UL>
+		<LI><I>returns:</I> a copy of the input string, but with any
+			double quote (") characters that it contained replaced
+			by two double quotes ("")
+		<LI><I>purpose:</I> This is necessary to include double quote
+			characters in the text strings send to sybase in SQL
+			queries.  WTS composes queries using the double quote
+			character to mark the beginning and end of strings;
+			this requires doubling any of them in the string
+			itself.
+		</UL><P>
+	<LI><B>escapeAmps (s)</B>
+		<UL>
+		<LI><I>returns:</I> a copy of "s", but with HTML escape
+			sequences (&amp;) replacing all ampersands (&) in s.
+		<LI><I>purpose:</I> provide a way to escape text field content
+			before sending it out to the HTML page
+		</UL><P>
+	<LI><B>FieldStorage_to_Dict (FieldStorage object)</B>
+		<UL>
+		<LI><I>returns:</I> a dictionary containing values from the
+			input object.
+		<LI><I>purpose:</I> accepts a cgi.FieldStorage object (input
+			from a Get or Post submission to a CGI script), from
+			which it extracts the values and puts them in a
+			dictionary using the fieldnames as keys.
+		<LI><I>notes:</I> fields with multiple values (like multi-select
+			boxes) will have their values in a comma-separated
+			string
+		</UL><P>
+	<LI><B>isHTML (s)</B>
+		<UL>
+		<LI><I>returns:</I> boolean indicating whether "s" contains any
+			HTML codes
+		<LI><I>purpose:</I> provides a single function to check for the
+			presence of any HTML markups in the input string
+		</UL><P>
+	<LI><B>isPRE (s)</B>
+		<UL>
+		<LI><I>returns:</I> boolean indicating whether "s" either:
+			contains no HTML tags, or is wrapped by &lt;PRE&gt; and
+			&lt;/PRE&gt;
+		<LI><I>purpose:</I> provides a single function to check whether
+			a text field is preformatted
+		</UL><P>
+	<LI><B>list_To_String (list, optional separator)</B>
+		<UL>
+		<LI><I>returns:</I> a string containing the items in list, using
+			the given separator between them
+		<LI><I>purpose:</I> can use to format things like lists of
+			areas, types, etc.  Just using str() on a list includes
+			the square brackets; this does not.
+		</UL><P>
+	<LI><B>parseCommandLine (argv, list of required fields <GNU format>,
+		list of optional fields <GNU format>)</B>
+		<UL>
+		<LI><I>returns:</I> a tuple with:  (a dictionary of option
+			names mapped to values, and a boolean flag indicating
+			whether there were any errors)
+		<LI><I>purpose:</I> serves as a wrapper for the Python standard
+			getopt() function, to provide a nice clean dictionary
+			from the command-line parameters
+		</UL><P>
+	<LI><B>parse_Date (date string)</B> - <I>internal use only</I>
+		<UL>
+		<LI><I>returns:</I> (standardized date string, list of error
+			strings)
+		<LI><I>purpose:</I> parses the input date string, trying to
+			recognize its basic components: month,day, and year.
+			Converts these to a string in the standard WTS date
+			format (mm/dd/yyyy).  If errors were found, return an
+			empty date string and a list of strings describing those
+			errors.  Use 90 as a pivot for two-digit years.  (90
+			or below assumed to be in 2000's, 91-99 assumed in
+			1900's)
+		</UL><P>
+	<LI><B>parse_DateRange (daterange string)</B>
+		<UL>
+		<LI><I>returns:</I> (start datetime, stop datetime, list of
+			error strings)
+		<LI><I>purpose:</I> parse the string, which may be a range of
+			dates (for date ranges in queries).  Ranges may be
+			a single date, an open-ended range, or a closed range.
+			Times are not accepted; the times in the start and stop
+			datetimes are 12:00 AM and 11:59 PM, respectively.
+		</UL><P>
+	<LI><B>parse_DateTime (datetime string)</B>
+		<UL>
+		<LI><I>returns:</I> (datetime string, list of error strings)
+		<LI><I>purpose:</I> provides a standard routine for parsing a
+			date and time string, to generate a datetime string
+			in a standard format
+		</UL><P>
+	<LI><B>parse_Time (time string)</B> - <I>internal use only</I>
+		<UL>
+		<LI><I>returns:</I> (standardized time string, list of error
+			strings)
+		<LI><I>purpose:</I> parses the input time string, trying to
+			recognize its components:  hours, minutes, and an
+			AM/PM designator.  Converts these to a string in the
+			standard WTS time format (hh:mm PM).  If errors were
+			found, return an empty time string and a list of
+			strings describing those errors.
+		</UL><P>
+	<LI><B>record_SQL_Errors (queries, parsers, exc_type, exc_value,
+		exc_traceback)</B>
+		<UL>
+		<LI><I>returns:</I> string filename of the log file
+		<LI><I>purpose:</I> creates a new log file and writes
+			information to it, detailing an exception that occurred
+			in executing sql queries.  Writes queries, parsers,
+			and the full suite of descriptive information about the
+			exception, as included in the parameters.
+		</UL><P>
+	<LI><B>send_Mail (send_from, send_to, subject, message)</B>
+		<UL>
+		<LI><I>returns:</I> None if sent okay, or an integer return code
+			from sendmail if not
+		<LI><I>purpose:</I> gives us an easy way in Python to invoke
+			the Unix sendmail utility and send program-generated
+			e-mails
+		</UL><P>
+	<LI><B>splitList (items, n)</B>
+		<UL>
+		<LI><I>returns:</I> a list of sublists
+		<LI><I>purpose:</I> breaks "items" into sublists, each
+			containing "n" or fewer items.  returns a list of those
+			sublists
+		</UL><P>
+	<LI><B>sql (queries, optional parsers)</B>
+		<UL>
+		<LI><I>returns:</I> list of dictionaries of query results, as
+			from mgdlib.sql
+		<LI><I>purpose:</I> This function serves as a wrapper for
+			mgdlib.sql, to catch any exceptions which are generated
+			by sybase and to write descriptive information to a
+			log file to aid in problem diagnosis.  The default
+			parser is 'auto'.
+		</UL><P>
+	<LI><B>string_To_List (string, optional separator)</B>
+		<UL>
+		<LI><I>returns:</I> a list of items found in the given string
+			which were separated by the given separator
+		<LI><I>purpose:</I> nearly an inverse of list_To_String(), but
+			not quite.  (if we use list_To_String a list with
+			objects, we won't get those objects back -- only their
+			representative strings)
+		</UL><P>
+	<LI><B>underscored (string)</B>
+		<UL>
+		<LI><I>returns:</I> a copy of the input string with spaces
+			replaced by underscores
+		<LI><I>purpose:</I> used to facilitate multi-word fieldnames
+			going into HTML forms.  (Internally the words are
+			separated by spaces; in HTML, we want to use
+			underscores.)
+		</UL><P>
+	<LI><B>wrapLines (string, integer max line length)</B>
+		<UL>
+		<LI><I>returns:</I> a string containing the wrapped lines
+		<LI><I>purpose:</I> wraps lines in the given string of text so
+			that no line is longer than the given maximum length.
+			When necessary, inserts a line feed at the space nearest
+			to the maximum line length.  Does not combine any lines;
+			only splits the long ones.
+		</UL><P>
+	</OL>
+</UL>
+</BODY>
+</HTML>

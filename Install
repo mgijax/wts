@@ -1,0 +1,163 @@
+#!/bin/sh
+
+# Installation program for the Work Tracking System
+
+# - Be sure to set the values in the Configuration file appropriately before
+#	running this script
+
+# function to remove an old link (in $1) if it exists
+
+removeLink() {
+	if [ -h $1 ]; then
+		rm $1
+	fi
+	}
+
+# function to recreate a link from $2 to $1
+
+refreshLink() {
+	removeLink $2
+	ln -s $1 $2
+	}
+
+# function to create a subdirectory ($1) in the current directory, if it
+# does not already exist
+
+makeDir() {
+	if [ ! -d $1 ]; then
+		echo "Making '$1' directory in `pwd`"
+		mkdir $1
+	fi
+	}
+
+# remember the top-level directory
+
+TOP=`pwd`
+
+# name of the configuration file
+
+CONFIGURATION=wts.cfg
+
+# read variables from the config file
+
+exec 4<&0
+exec < $CONFIGURATION
+while read name value junk
+do
+	case "$name" in
+		PYTHON)
+			PY_EXE=$value;;
+		DATADIR)
+			DATADIR=$value;;
+		RELNOTES)
+			RELNOTES=$value;;
+		[A-z]*)
+			;;	# other parms are not needed by Install
+	esac
+done
+exec 0<&4
+
+# locations of files to which we will link within WTS
+
+PYTHON=$TOP/bin/python
+CONFIG=$TOP/lib/python/Configuration.pyc
+
+# make bin directory and fill it
+
+makeDir bin
+
+cd bin
+echo "Linking to python executable in `pwd`"
+refreshLink /usr/local/bin/python python
+cd $TOP
+
+# make other necessary directories
+
+makeDir logs
+cd www/userdocs
+makeDir help
+cd $TOP
+
+# create symbolic links...
+
+echo "Creating links to config.pyc and python..."
+
+for dir in admin www/searches
+do
+	cd $dir
+	echo "...in `pwd`"
+	refreshLink $CONFIG Configuration.pyc
+	refreshLink $PYTHON python
+	cd $TOP
+done
+
+cd lib/python
+refreshLink $PYTHON python
+cd $TOP
+
+# compile python libraries
+
+echo "Compiling python libraries..."
+cd lib/python
+$PY_EXE -c 'import compileall; compileall.compile_dir(".")'
+chgrp www *.pyc
+cd $TOP
+
+# link to data dir from subdirectories where we need items in it
+
+echo "Linking to web data directory..."
+for dir in admin www/searches www/userdocs www/userdocs/help
+do
+	cd $dir
+	echo "...in `pwd`"
+	refreshLink $TOP/www/data data
+	cd $TOP
+done
+
+# generate user documentation
+
+cd admin
+echo "Generating HTML pages and command line alias..."
+./wts.screens.py --dir ../www --home
+./wts.screens.py --dir ../www/searches --query
+./wts.screens.py --dir ../www/searches --grid
+./wts.screens.py --dir ../www/userdocs/help --help
+refreshLink wts.py wts
+cd $TOP
+
+# if this system has the needed binaries, genereate pdf versions of
+# FrameMaker docs within WTS
+
+if [ -d /opt/frame/bin ]; then
+	cd admin
+	gen_pdf
+	cd $TOP
+else
+	echo "------------------------------------------------------------"
+	echo "WARNING: /opt/frame/bin does not exist.  To generate the PDF"
+	echo "    documentation, please go to the admin/ directory and run"
+	echo "    gen_pdf on a system with the FrameMaker binaries in that"
+	echo "    location."
+	echo "------------------------------------------------------------"
+fi
+
+# link to system docs to make them web accessible
+
+cd www
+echo "Making system documentation web viewable"
+refreshLink ../system_docs system_docs
+cd $TOP
+
+# link to release notes
+
+cd www/userdocs
+echo "Linking to release notes"
+refreshLink $RELNOTES releaseNotes.txt
+cd $TOP
+
+# generate the security file
+
+cd admin
+echo "Generating security file"
+./gen_htaccess.py
+cd $TOP

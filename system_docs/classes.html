@@ -1,0 +1,1733 @@
+<HTML>
+<HEAD>
+<TITLE>WTS: Proposed Classes</TITLE>
+</HEAD>
+<BODY>
+
+<CENTER>
+<H3>WTS: Proposed Classes</H3>
+Jonathan Beal<BR>
+January 6, 1999<P>
+</CENTER>
+
+<HR>
+<CENTER>
+<B><a name="dataClasses">Data Classes</a></B><BR>
+<I>The following classes are involved directly in data management.</I><P>
+<a href='class.hierarchy.html'>Pictoral Class Hierarchy</a><P>
+</CENTER>
+<HR>
+
+<OL>
+<LI><B>Arc</B>
+	<UL>
+	<LI><I>insight:</I> <B>An Arc is an edge in a directed graph.</B><P>
+	<LI><I>purpose:</I> An Arc represents a directed edge between two
+		vertices in a digraph.<P>
+	<LI><I>notes:</I> In the WTS system, an Arc is used to represent a
+		"depends on" relationship between two tracking records.  We
+		presently assume that vertices are identified by unique
+		integers.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (from node, to node)
+			<UL>
+			<LI> initialize this Arc object originating at the given
+				"from node" and terminating at the given "to
+				node"
+			</UL>
+		<LI>getFromNode ()
+			<UL>
+			<LI> return the value stored for the "from node" of this
+				Arc -- its point of origin
+			</UL>
+		<LI>getToNode ()
+			<UL>
+			<LI> return the value stored for the "to node" of this
+				Arc -- its destination
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>ArcSet</B>
+	<UL>
+	<LI><I>insight:</I> <B>An ArcSet is a set of Arc objects, to which Arcs
+		may be added, and from which they may be removed.</B><P>
+	<LI><I>purpose:</I> provides a convenient, optimized (in space and time)
+		way of dealing with sets of Arcs<P>
+	<LI><I>notes:</I> This class uses the Set class to provide a very
+		efficient way of representing and accessing sets of Arcs.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (optional list of Arc objects)
+			<UL>
+			<LI> initializes this ArcSet object, including starting
+				with an empty set of Arcs and then adding any
+				Arcs passed in the optional parameter
+			</UL>
+		<LI>addArcs (list of Arc objects)
+			<UL>
+			<LI> adds the Arcs from the parameter to this set of
+				Arcs
+			</UL>
+		<LI>addArc (Arc object)
+			<UL>
+			<LI> adds the Arc from the parameter to this set of Arcs
+			</UL>
+		<LI>exists (Arc object)
+			<UL>
+			<LI> tests to see whether the specified Arc exists in
+				this ArcSet, returns a boolean
+			</UL>
+		<LI>removeArcs (list of Arc objects)
+			<UL>
+			<LI>removes each Arc in the parameter from this ArcSet
+			</UL>
+		<LI>removeArc (Arc object)
+			<UL>
+			<LI>removes the specified Arc from this ArcSet
+			</UL>
+		<LI>getArcs ()
+			<UL>
+			<LI>returns a list of Arc objects which includes all
+				those in this ArcSet
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Category</B>
+	<UL>
+	<LI><I>insight:</I> <B>A Category object is a named group of staff
+		members to which a new tracking record may be routed</B><P>
+	<LI><I>purpose:</I> provide a simple mechanism of working with routing
+		categories as initially defined for WTS 1.1 (TR 226)<P>
+	<LI><I>notes:</I>
+		This class identifies each group by a unique key and a unique
+		name, and stores a description, a string of e-mail addresses,
+		and a set of staff members for each.  Each category also has
+		optional default values for Area, Type, and Status.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (category name)
+			<UL>
+			<LI> Accepts a string category name as input.  Looks up
+				corresponding info from the database and uses
+				it to instantiate this new Category object.
+			</UL>
+		<LI>getArea ()
+			<UL>
+			<LI> Return a string containing the name of the default
+				Area for this Category, or None if no default.
+			</UL>
+		<LI>getEmail ()
+			<UL>
+			<LI> Return a string containing the comma-separated set
+				of e-mail addresses who should be notified when
+				a new tracking record is routed to this
+				Category.
+			</UL>
+		<LI>getName ()
+			<UL>
+			<LI> Return a string containing the name of this
+				Category.
+			</UL>
+		<LI>getStaff ()
+			<UL>
+			<LI> Return a string containing a comma-separated set
+				of staff members who should be in the Staff
+				field when a new tracking record is routed to
+				this Category.
+			</UL>
+		<LI>getStatus ()
+			<UL>
+			<LI> Return a string containing the name of the default
+				Status for this Category, or None if no default.
+			</UL>
+		<LI>getType ()
+			<UL>
+			<LI> Return a string containing the name of the default
+				Type for this Category, or None if no default.
+			</UL>
+		<LI>getDescription ()
+			<UL>
+			<LI> Return a string containing a text description of
+				this Category
+			</UL>
+		<LI>sendNotification (return address, TrackRec object,
+			boolean -- send special mail if TrackRec is emergency?)
+			<UL>
+			<LI> Send e-mail to the addresses specified in this
+				Category from the specified return address and
+				containing info about the given tracking record
+				that was routed to this Category.  Returns the
+				subject line of the e-mail sent.
+			</UL>
+		<LI>setEmail (string containing e-mail addresses)
+			<UL>
+			<LI> Set the e-mail addresses in this Category object
+			</UL>
+		<LI>setStaff (string containing staff members)
+			<UL>
+			<LI> Set the staff field of this Category
+			</UL>
+		<LI>save ()
+			<UL>
+			<LI> Save the contents of this Category object to the
+				database, presumably used after calling
+				setEmail() and/or setStaff().
+			</UL>
+		</UL>
+	</UL><P>
+	
+<LI><B>Configuration</B>
+	<UL>
+	<LI><I>insight:</I> <B>A Configuration object is a set of parameters
+		used to configure WTS program files.</B><P> A configuration
+		file (in the unix file system) will identify values for:
+		database server, database, database username, database password,
+		and a directory where diagnostic files may be written.  These
+		four items will be used to access the database and look up other
+		configuration items in the table WTS_Config.<P>
+		The idea is that we should be able to instantiate a
+		Configuration object and then ask it to return the value of any
+		configuration parameter that we specify.<P>
+	<LI><I>purpose:</I> provide a simple, uniform method of looking up
+		configuration parameters<P>
+	<LI><I>notes:</I> To save instantiating multiple Configuration objects,
+		the Configuration.py module should instantiate one globally
+		accessible Configuration object at the time of its import.  All
+		parts of WTS can then use the single Configuration object
+		"config".  This should save considerable amounts of time in
+		reading the config file and the parameters in the database.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ ()<BR>
+			<UL>
+			<LI>Creates an object of the Configuration type.  If an
+			environment variable named WTS_CONFIG exists, then the
+			file it specifies is read and its parameters are stored.
+			Otherwise, we use the file 'wts.cfg' in the main WTS
+			directory.
+			</UL>
+		<LI>__getitem__ (parameter name)<BR>
+			<UL>
+			<LI>If the specified parameter name is defined in the
+			Configuration object, then returns the value of that
+			named parameter.  If it is not defined, then a KeyError
+			exception is raised.
+			</UL>
+		<LI>keys ()<BR>
+			<UL>
+			<LI>Returns a list of all keys (parameter names)
+			defined in this Configuration object.
+			</UL>
+		<LI>refresh ()<BR>
+			<UL>
+			<LI>Object clears all parameters and values, and
+			reloads them from the configuration file and database.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Controlled_Vocab</B>
+	<UL>
+	<LI><I>insight:</I> <B>A Controlled_Vocab object is a mapping of string
+		names to database keys and vice versa, with one of the keys set
+		as the default.
+		</B><P>
+		This class provides a standard mechanism for accessing the
+		values of a controlled vocabulary.<P>
+	<LI><I>purpose:</I> provide a simple mechanism of working with
+		controlled vocabulary mappings in a variety of common ways.<P>
+	<LI><I>notes:</I> To save instantiating multiple instances of the same
+		Controlled_Vocab objects, the Controlled_Vocab.py module should
+		load all the controlled vocabularies from the database at the
+		time of its import.  These can be placed in a dictionary (named
+		"cv") which is keyed by the controlled vocabulary table name.
+		Loading these from the database only once should save a fair
+		amount of time.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (table name)
+			<UL>
+			<LI> Accepts a string table name as input.  Looks up
+			and stores the mapping from keys to text values for
+			that controlled vocabulary.  Information is read
+			directly from the database.
+			</UL>
+		<LI>__getitem__ (item name)
+			<UL>
+			<LI> Returns the key corresponding the the given item
+			name from the controlled vocabulary, or None if no
+			corresponding key can be found.  Lookup is case
+			insensitive.
+			</UL>
+		<LI>default_key ()
+			<UL>
+			<LI>returns the key of the default value for this
+			controlled vocabulary (an integer, except for the
+			CV_WTS_Permissions table where it is a string), or
+			None if there is not one defined.
+			</UL>
+		<LI>key_dict ()
+			<UL>
+			<LI>return a dictionary of keys mapped to string names
+			</UL>
+		<LI>keyToName (item key)
+			<UL>
+			<LI> Returns the item name corresponding the the given
+			key from the controlled vocabulary, or None if no
+			corresponding item name can be found.
+			</UL>
+		<LI>name_dict ()
+			<UL>
+			<LI>return a dictionary of lowercase string names
+			mapped to keys
+			</UL>
+		<LI>ordered_map ()
+			<UL>
+			<LI>return a list of (key, string name) tuples in the
+			order specified in the database
+			</UL>
+		<LI>ordered_names ()
+			<UL>
+			<LI>return a list of string item names in proper order
+			(specified by the database)
+			</UL>
+		<LI>validate (string)
+			<UL>
+			<LI>validate the string of comma separated names
+			and return (list of keys, list of errors).  If the i-th
+			name cannot be found, then the i-th entry in the list
+			of keys will be None and the i-th entry in the list of
+			errors will contain an explanation.  If the i-th name
+			can be found, the i-th entry in the list of keys will
+			contain its corresponding database key, and the i-th
+			entry in the list of errors will be None.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> create_Include_File (
+			table name, full pathname, name of CV for the user)
+			<UL>
+			<LI>lookup the current values in the database for the
+			controlled vocabulary specified by the table name, and
+			create an HTML include file containing that information
+			in an HTML-formatted table in a file at the full
+			pathname specifed by the parameter.  Title the table
+			with the name of the CV for the user.  (like Staff
+			rather than CV_Staff, for example)
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> get_Controlled_Vocabs
+			(list of table names)
+			<UL>
+			<LI>look up the current values for each controlled
+			vocabulary specified in the list of table names, and
+			return a dictionary with table_name -> Controlled_Vocab
+			pairs.
+			</UL>
+		</UL>
+	</UL><P>
+
+
+<LI><B>Digraph</B>
+	<UL>
+	<LI><I>insight:</I> <B>A Digraph object is a collection of nodes and a
+		collection of arcs between pairs of them.</B><P>
+		This class will provide a means of analyzing the Depends On
+		relationship for tracking records and computing its transitive
+		closure.<P>
+	<LI><I>purpose:</I>provides functionality for analyzing the Depends
+		On relationship for tracking records and computing the
+		transitive closure.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (optional ArcSet object)
+			<UL>
+			<LI> initialize this Digraph object, then add Arcs from
+				the optional ArcSet object and create nodes as
+				needed (if an Arc's endpoint isn't already in
+				the Digraph, add it)
+			</UL>
+		<LI>addArcs (ArcSet object)
+			<UL>
+			<LI> add all the Arcs in the ArcSet to the Digraph, and
+				add the Arcs' nodes if they're not already in
+				the Digraph.
+			</UL>
+		<LI>addArc (Arc object)
+			<UL>
+			<LI> add the given Arc to the Digraph, and add its
+				nodes if they're not already in the Digraph.
+			</UL>
+		<LI>addNodes (*node)
+			<UL>
+			<LI> add each specified node to the Digraph
+			</UL>
+		<LI>removeArcs (ArcSet object)
+			<UL>
+			<LI> remove each Arc in the given ArcSet from the
+				Digraph
+			</UL>
+		<LI>removeArc (Arc object)
+			<UL>
+			<LI> remove the given Arc from the Digraph
+			</UL>
+		<LI>removeNodes (*node)
+			<UL>
+			<LI> remove each specified node from the Digraph, along
+				with all Arcs which start or end at that node
+			</UL>
+		<LI>getArcs ()
+			<UL>
+			<LI> return a list of Arc objects in this Digraph
+			</UL>
+		<LI>getNodes ()
+			<UL>
+			<LI> return a list of the nodes in this Digraph
+			</UL>
+		<LI>getTransitiveClosure ()
+			<UL>
+			<LI> return an ArcSet containing all Arcs in the
+				transitive closure of this Digraph
+			<LI> uses helper functions <I>tc()</I> and
+				<I>getClosure()</I> defined in the same
+				module
+			</UL>
+		</UL>
+	</UL><P>
+
+
+<LI><B>HTGroup</B>
+	<UL>
+	<LI><I>insight:</I> <B>An HTGroup is a Python representation of a group
+		file for use by .htaccess files.</B><P>
+	<LI><I>purpose:</I> To provide an easy way to access and modify group
+		files using Python.<P>
+	<LI><I>notes:</I> Group files are usually maintained by hand, but this
+		module allows them to be modified programmatically using Python.
+		This class uses a WriteLock object to ensure that a given group
+		file may accessed by only one user/session at a time.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (path to group file)
+			<UL>
+			<LI> initializes this HTGroup object, and if the
+				specified group file already exists, we lock it
+				and read its group information.  Otherwise, we
+				create it and lock it.
+			</UL>
+		<LI>addGroup (group name)
+			<UL>
+			<LI> add the given group to this object
+			</UL>
+		<LI>addUser (user name, group name)
+			<UL>
+			<LI> add the specified user to the specified group
+			</UL>
+		<LI>close ()
+			<UL>
+			<LI> save the group data to the file (specified in the
+				constructor) and unlock the file
+			</UL>
+		<LI>getAllGroups ()
+			<UL>
+			<LI> return a list of all groups defined in this object
+			</UL>
+		<LI>getAllUsers (group name)
+			<UL>
+			<LI> return a list of user names in the given group
+			</UL>
+		<LI>hasUser (user name, group name)
+			<UL>
+			<LI> returns a boolean indicating if the specified user
+				is in the given group
+			</UL>
+		<LI>isGroup (group name)
+			<UL>
+			<LI> returns a boolean indicating whether the given
+				group name is valid (is defined in this HTGroup
+				object)
+			</UL>
+		<LI>removeGroup (group name)
+			<UL>
+			<LI> delete the given group from this object, and return
+				a boolean indicating whether we deleted it
+			</UL>
+		<LI>removeUserFromGroup (user name, group name)
+			<UL>
+			<LI> delete the specified user name from the given
+				group, and return a boolean indicating whether
+				we deleted it
+			</UL>
+		<LI>removeUserFromAllGroups (user name)
+			<UL>
+			<LI> delete the given user name from all groups in
+				this object, and return a boolean indicating
+				whether we removed all instances of that user
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>HTPassword</B>
+	<UL>
+	<LI><I>insight:</I> <B>An HTPassword object is a Python representation
+		of a password file for use by .htaccess files.</B><P>
+	<LI><I>purpose:</I> To provide an easy way to access and modify HT
+		password files using Python.<P>
+	<LI><I>notes:</I> This type of password file is usually maintained by
+		the Unix utility "htpasswd", but this module allows them to be
+		modified programmatically using Python.  This class uses a
+		WriteLock object to ensure that a given password file may
+		accessed by only one user/session at a time.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (path to password file)
+			<UL>
+			<LI> initializes this HTPassword object, and if the
+				specified password file already exists, we lock
+				it and read its user/password information.
+				Otherwise, we create it and lock it.
+			</UL>
+		<LI>addUser (user name, unencrypted password)
+			<UL>
+			<LI> adds a new user with the specified name, and
+				encrypts and stores its associated password
+			</UL>
+		<LI>close ()
+			<UL>
+			<LI> save the user/password data to the file (specified
+				in the constructor) and unlock the file
+			</UL>
+		<LI>getAllUsers ()
+			<UL>
+			<LI> return a list of users currently defined in this
+				object
+			</UL>
+		<LI>isUser (user name)
+			<UL>
+			<LI> returns a boolean which indicates whether the
+				specified user is valid (is named in this
+				object)
+			</UL>
+		<LI>removeUser (user name)
+			<UL>
+			<LI> deletes the specified user from this object
+			</UL>
+		<LI>setPassword (user name, unencrypted password)
+			<UL>
+			<LI> encrypts and sets a new password for the given
+				user (who must already exist in the file)
+			<LI> uses helper function <I>to64()</I>, defined in
+				the same module
+			</UL>
+		<LI>unsetPassword (user name)
+			<UL>
+			<LI> unset the password for the specified user,
+				effectively disabling it
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Set</B>
+	<UL>
+	<LI><I>insight:</I><B>A Set object is an unordered collection of items.
+		Each item in the Set is unique.  This class represents the
+		typical mathematical set.</B><P>
+	<LI><I>purpose:</I> While a Python dictionary may be used to mimic the
+		behavior of a mathematical set, it was desirable to provide a
+		purer view in a dedicated Set class which provides a good
+		abstraction and many of the typical Set operations as methods.
+		<P>
+	<LI><I>notes:</I> In general, single-set operations are very fast
+		(add, remove, contains, etc.), while multiple-set operations
+		are necessarily slower (union, intersections, etc.).  All are
+		fairly well-optimized for space & time, however.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (*values)
+			<UL>
+			<LI> initializes a new, empty Set object and adds any
+				values which were passed to it
+			</UL>
+		<LI>__str__ ()
+			<UL>
+			<LI> return a comma-separated string of items in the Set
+			</UL>
+		<LI>add (*values)
+			<UL>
+			<LI> add each of the specified values to the Set
+			</UL>
+		<LI>clone ()
+			<UL>
+			<LI> return a new Set object which is an exact copy of
+				this one
+			</UL>
+		<LI>contains (value)
+			<UL>
+			<LI> return a boolean which indicates the presence of
+				the specified value in the Set
+			</UL>
+		<LI>containsAll (*values)
+			<UL>
+			<LI> returns a boolean which indicates whether ALL the
+				specified values are in the Set
+			</UL>
+		<LI>values ()
+			<UL>
+			<LI> return a list containing all values in this Set
+			</UL>
+		<LI>remove (*values)
+			<UL>
+			<LI> remove each specified value from the Set, if it
+				are there
+			</UL>
+		<LI>empty ()
+			<UL>
+			<LI> return a boolean indicating whether the Set is
+				empty or not
+			</UL>
+		<LI>intersection (Set object)
+			<UL>
+			<LI> returns a Set which is the intersection of this
+				Set and the one specified in the parameter
+			</UL>
+		<LI>union (Set object)
+			<UL>
+			<LI> returns a Set which is the union of this Set and
+				the one specified in the parameter
+			</UL>
+		<LI>difference (Set object)
+			<UL>
+			<LI> returns a Set which is the difference between this
+				Set and the one specified in the parameter
+			</UL>
+		<LI>subset (Set object)
+			<UL>
+			<LI> returns a boolean which indicates whether this Set
+				is a subset of the one specified in the
+				parameter
+			</UL>
+		<LI>superset (Set object)
+			<UL>
+			<LI> returns a boolean which indicates whether this Set
+				is a superset of the one specified in the
+				parameter
+			</UL>
+		<LI>equals (Set object)
+			<UL>
+			<LI> returns a boolean which indicates whether this Set
+				contains all the same values as the one
+				specified in the parameter
+			</UL>
+		<LI>count ()
+			<UL>
+			<LI> returns integer number of items in this Set object
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>TabFile</B>
+	<UL>
+	<LI><I>insight:</I><B>A TabFile object is an abstraction of a tab
+		delimited file.</B><P>
+	<LI><I>purpose:</I>This class reads and writes tab-delimited files,
+		generated from lists of data dictionaries (like those
+		produced by <I>mgdlib.sql()</I>)<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (optional filename to read)
+			<UL>
+			<LI> initializes this object, and if a filename is
+				specified, reads data from that file
+			</UL>
+		<LI>setList (list of data dictionaries)
+			<UL>
+			<LI> sets the content of this TabFile object to be the
+				given list of dictionaries
+			</UL>
+		<LI>getList ()
+			<UL>
+			<LI> returns a list of dictionaries, each of which is
+				one row of data from this object
+			</UL>
+		<LI>getLine (dictionary)
+			<UL>
+			<LI> returns the string data line that was used to
+				generate the given dictionary
+			</UL>
+		<LI>__str__ ()
+			<UL>
+			<LI> returns a string which, when printed, would be the
+				tab-delimited file represented by this object
+			</UL>
+		<LI>save (filename)
+			<UL>
+			<LI> saves the contents of this object as a tab
+				delimited file with the given filename
+			</UL>
+		<LI>read (filename)
+			<UL>
+			<LI> resets the contents of this object, then reads 
+				the specified file, parses it, and stores its
+				content in this object
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Template_File</B>
+	<UL>
+	<LI><I>insight:</I><B>A Template_File object is a text-file
+		representation of a dictionary which may be saved to and
+		imported from the unix file system.</B><P>
+		These files are created relative to the current directory.<P>
+	<LI><I>purpose:</I> provide an easy means of generating an
+		HTML-formatted template file which can be editing with an
+		external text editor, and then read & parsed back in.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (filename, optional dictionary of field -> value
+		pairs, list with ordered field names)
+			<UL>
+			<LI>requires specification of a filename to create (or
+			to read from).  The dictionary contains the data to be
+			saved to a template file, or may be empty if we are
+			going to read from the file.  The list with ordered
+			field names is optional and, if present, specifies the
+			order in which the fields should appear in the file.
+			</UL>
+		<LI>dict ()
+			<UL>
+			<LI>returns the dictionary of field -> value pairs
+			stored in the Template_File object, or {} if the
+			object is empty.
+			</UL>
+		<LI>getFilename ()
+			<UL>
+			<LI>returns a string which is the filename for this
+				template file in the file system
+			</UL>
+		<LI>load ()
+			<UL>
+			<LI>loads an external text file with the stored filename
+			and parses it to produce and store a dictionary of
+			field -> value pairs.  This method should properly
+			recreate a dictionary used to create the file in the
+			'save' method.
+			</UL>
+		<LI>save ()
+			<UL>
+			<LI>creates an external text file with the stored
+			filename.  Writes the stored dictionary of information
+			out to the file in HTML format.  Ensures that the
+			field names are delimited so that they may be identified
+			when the file is loaded back in.
+			</UL>
+		<LI>set_Key_Order (list of keys)
+			<UL>
+			<LI>sets the ordering in which the keys (field names)
+				should appear when written to a text file
+			</UL>
+		<LI>erase ()
+			<UL>
+			<LI>erases the template file with the currently stored
+			filename, if it exists.  If not, it is ignored.
+			</UL>
+		</UL>
+	</UL><P>
+
+
+<LI><B>TrackRec</B> <I>- inherits from WTS_DB_Object</I>
+	<UL>
+	<LI><I>insight:</I><B>A TrackRec object is one complete tracking record,
+		with all associated information.</B><P>
+	<LI><I>purpose:</I> provide a conceptual tracking record model and a
+		means of accessing tracking record data<P>
+	<LI><I>notes:</I> The fundamental item in WTS is a tracking record.  The
+		TrackRec class represents that very important entity.  All
+		knowledge about the structure of tracking records and the
+		database schema used to represent them will be contained within
+		this class.  This allows other classes and scripts to deal with
+		tracking records at an abstract level, rather than worrying
+		about the details.  It provides a single point of maintenance
+		whenever changes occur in the tracking record definition or
+		associated components of the schema.<P>
+		All implementation details about tracking records are contained
+		in the TrackRec class.  This includes looking up values,
+		setting values, providing properly formatted output of
+		tracking records, querying the database, parsing and merging
+		query results, etc.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (optional integer TR #)
+			<UL>
+			<LI>creates a new TrackRec object.  If a TR # is
+			specified, then the 'load' method is invoked to get
+			current values of attributes from the database.  If the
+			parameter is None, then the 'set_Defaults' method is
+			invoked to set the default values for all attributes.
+			</UL>
+		<LI>removeFromCV (CV attribute fieldname, string of
+			comma-separated values to remove)
+			<UL>
+			<LI>removes each specified value from the field with
+			the given name.  does not complain if the value was not
+			in the field to begin with.
+			</UL>
+		<LI>addToCV (CV attribute fieldname, string of comma-separated
+			values to add)
+			<UL>
+			<LI>adds each specified value to the field with the
+			given name.  does not complain if the value was in the
+			field to begin with.
+			</UL>
+		<LI>hasProjectDirectory ()
+			<UL>
+			<LI>returns a boolean which indicates whether this
+			tracking record has a project directory defined
+			</UL>
+		<LI>getRoutingMessage ()
+			<UL>
+			<LI>return the message (string) which serves as a simple
+			summary of this tracking record (to be used in sending
+			e-mails when it is created)
+			</UL>
+		<LI>html_Display (optional boolean -- show expanded display?)
+			<UL>
+			<LI>returns a list of HTMLgen objects which represent
+			the data section of a Tracking Record Detail Form with
+			the attribute values of the current object.  The boolean
+			parameter determines whether we show the standard
+			display (default) or an expanded display which given
+			more info about dependencies.
+			</UL>
+		<LI>html_Edit_LongForm ()
+			<UL>
+			<LI>returns a list of HTMLgen objects which represent
+			the data entry section of a Tracking Record Edit Form
+			or New Tracking Record Long Form with the attribute
+			values of the current object.
+			<LI><I>To generate for a New TR Long Form, instantiate a
+			new TrackRec object with None for an initial TR #.  This
+			will set the defaults.  Then, it's all ready for you to
+			invoke this method.</I>
+			</UL>
+		<LI>isEmergency ()
+			<UL>
+			<LI>returns a boolean, TRUE (1) if the TR's Priority is
+			"emergency", or FALSE (0) if not
+			</UL>
+		<LI>html_New_ShortForm ()
+			<UL>
+			<LI>returns a list of HTMLgen objects which represent
+			this new tracking record on a short form.  (the New TR
+			Short Form)  This method should only be used when
+			creating a new tracking record, or data will be lost.
+			</UL>
+		<LI>load ()
+			<UL>
+			<LI>clear all current attributes (except TR #) and
+			load current ones for the object's TR # from the
+			database.
+			<LI><I>Should be invoked only by the '__init__'
+			method.</I>
+			</UL>
+		<LI>lock ()
+			<UL>
+			<LI>locks the current tracking record for editing.  This
+			mechanism prevents simultaneous edits.
+			</UL>
+		<LI>num ()
+			<UL>
+			<LI>returns a string containing the number (database
+			key) of this tracking record.  This method should be
+			used with caution.  A key like this should not just
+			float around without reason.  The num() method was
+			included only so that we could link the GET option on
+			the Edit button properly.
+			</UL>
+		<LI>save (optional boolean flag to create new project directory)
+			<UL>
+			<LI>saves the attributes for the current object to the
+			database.  If the current object does not have a TR #,
+			then it is a new tracking record; invokes the 
+			'allocate_Key' method to assign a number before
+			saving the information.  Archives status changes, but
+			does not track history of any other attributes.  If the
+			optional flag is true, we create a new project directory
+			for this tracking record.<P>
+			Uses several helper functions, all named <I>save_*</I>,
+			which are not discussed here, but which are clearly set
+			off by comments in the code.
+			</UL>
+		<LI>set_Defaults ()
+			<UL>
+			<LI>reset all attributes of this tracking record to
+			their defaults, but leave the TR # intact if one exists
+			(overrides inherited method)
+			</UL>
+		<LI>set_Values (dictionary of fieldnames --> values)
+			<UL>
+			<LI>sets the fields of this tracking record to have
+			the values specified, but trims all lines in a large
+			text field to, at most, 80 characters.
+			</UL>
+		<LI>unlock (optional flag to indicate override authority)
+			<UL>
+			<LI>unlocks the current tracking record so that it may
+			be edited by other users, if it is locked by the current
+			user.  If the override flag is non-None, we skip the
+			user test and unlock it no matter who set the lock.
+			<LI><I>Should be invoked only after any changes to
+			attributes have been committed to the database or
+			cancelled.  (or via manual intervention by maintenance
+			scripts)</I>
+			</UL>
+		<LI>verify_Current_Lock ()
+			<UL>
+			<LI>verify that the current user has a lock on this
+			tracking record (raise the notLocked exception
+			otherwise)
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> blank (string)
+			<UL>
+			<LI>returns 1 if string should be considered blank (if
+			it is '', 'None', None, or all whitespace
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> build_And_Run_SQL
+			<a href="wts.misc.html#Dicts">(Clean_Query_Dict)</a>
+			<UL>
+			<LI>Accepts a dictionary
+			<a href="wts.misc.html#Dicts">(Clean_Query_Dict)</a>
+			produced by the 'validate_Query_Form' method, uses those
+			values to produce a SQL query, runs the query via
+			wtslib.sql with parser set to 'auto', and returns the
+			resulting list of dictionaries (each of which is a row
+			returned by the database engine).<P>
+			Uses several "helper functions" which exist in
+			TrackRec.py but are not discussed here.  These appear
+			below build_And_Run_SQL() and are clearly set off by
+			appropriate comments.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> build_Query_Table
+			(clean_Results)
+			<UL>
+			<LI> Returns a list of HTMLgen objects which define a
+			table dislaying the given set of cleaned query results.
+			(cleaned by parse_And_Merge)
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> directoryOf (TR number)
+			<UL>
+			<LI> Returns either None (if there is no defined project
+			directory for the specified tracking record) or a string
+			containing the parent project directory and the project
+			directory.  (example:  directoryOf (225) ==> "200/225")
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> directoryPath (dir)
+			<UL>
+			<LI> Returns a string containing the full unix path to
+			the specified project directory.  ("dir" should only
+			contain what is returned by directoryOf())
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> directoryURL (dir)
+			<UL>
+			<LI> Returns a string containing the HTMl anchor which
+			links to dir, with the unix path being the highlighted
+			text of the link.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> expand_TR_Range (range, key)
+			<UL>
+			<LI> Returns a string which is a clause suitable for
+			inclusion in the <I>where</I> part of a query,
+			representing the given key (field name) being in the
+			specified range of integer values.
+			<LI><I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> expand_TR (tr numbers, key)
+			<UL>
+			<LI> Returns a list of strings, where each string is a
+			single clause for use in the <I>where</I> section of
+			a query.  Key is the name of the field we need to
+			restrict, possibly with a table qualifier.  TR numbers
+			is a string containing a comma-separated list of
+			tracking record umbers and/or ranges of tracking record
+			numbers.
+			<LI><I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> getBaseDir (TR #)
+			<UL>
+			<LI> returns None if the specified tracking record does
+			not have a defined directory, or a string containing
+			that base directory if it does.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> getSqlForTempStatusTable (
+			starting date, stopping date)
+			<UL>
+			<LI> returns a tuple containing a database table name,
+			and a list of SQL statements which, when run, produce 
+			that table with TR info based on a range of Status
+			Dates bounded by the parameters.  The table has fields
+			_TR_key, _Status_key, and status_set_date.  Only the
+			latest status change within that date range is recorded
+			in the table.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> getStatusTable (row type --
+			"Area" or "Type", date range)
+			<UL>
+			<LI> returns an HTMLgen object which represents the
+			Type by Status, or Area by Status, grid.  The grid has
+			Types or Areas for rows, and Statuses for columns.  Each
+			inner cell then contains the number of TRs with that
+			Area/Type which had a Status change in that date range,
+			and which were in that Status at the end of the date
+			range.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> lockedTrackRecList ()
+			<UL>
+			<LI> returns a list of tuples, each of which represents
+			a single locked tracking record.  Each tuple contains:
+			(TR #, who locked it, when locked, abbreviated title)
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> newBaseDirectoryPieces (TR #)
+			<UL>
+			<LI> returns a tuple which contains two strings:
+			(parent project directory, project directory)
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> opposite (item)
+			<UL>
+			<LI> Returns a value which would sort in reverse order
+			from item.  For example, if item is an integer, return
+			its negation.  For strings, return a string with A's
+			replaced with Z's, B's replaced with Y's, etc.
+			<LI> <I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> parse_And_Merge (list of
+			<a href="wts.misc.html#Dicts">Query_Row_Dict</a>,
+			key name)
+			<UL>
+			<LI>Accepts a list of dictionaries (<a href=
+			"wts.misc.html#Dicts">Query_Row_Dict</a>, which must
+			have been produced by the method 'build_And_Run_SQL').
+			These dictionaries share a common (specified) key field
+			that may be used to uniquely identify a single tracking
+			record.  WTS has several many-to-many relationships in
+			the schema, which likely will result in multiple rows
+			returned per tracking record.  This method combines the
+			information from all those rows into a list with a
+			single row per tracking record, which is returned.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> rebuild_htaccess (TR #)
+			<UL>
+			<LI> rebuilds the .htaccss file for the parent project
+			directory which would contain the project directory of
+			the specified tracking record.  (updates it in case of
+			changes in the Title field or of new tracking records)
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> remove (orig, del_item)
+			<UL>
+			<LI> returns a copy of the list orig which no longer
+			contains del_item.  Useful to ensure that we get a copy
+			of orig, not an altered orig.  (as opposed to what
+			would happend by doing orig.remove (del_item))
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> save_WTS_TrackRec (values,
+			method)
+			<UL>
+			<LI> returns a list of strings which are queries needed
+			to save values to the main tracking record table in the
+			database.  Uses different methods for new versus
+			existing tracking records.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> save_Standard_M2M (values,
+			old values, method)
+			<UL>
+			<LI> returns a list of strings which are the queries
+			needed to save values for the four standard many-to-many
+			relationships.  Uses different methods for new and
+			existing tracking records.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> save_Text_Fields (values,
+			old values, method)
+			<UL>
+			<LI> returns a list of strings which are queries that
+			save values for the three large text fields of a
+			tracking record.  Uses different methods for new and
+			existing tracking records.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> save_Relationships (values,
+			old values, method)
+			<UL>
+			<LI> returns a list of strings which are queries that
+			save the dependency information in the Depends On field
+			of a tracking record.  Uses different methods for new
+			and existing tracking records.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> updateTransitiveClosure (
+			TR #, relationship type)
+			<UL>
+			<LI>updates the transitive closure in the database for
+			the given relationship type (TrackRec.DEPENDS_ON for
+			example) for all nodes which are related to the
+			specified tracking record.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> validate_Query_Form (<a href=
+			"wts.misc.html#Dicts">Raw_Query_Dict</a>)
+			<UL>
+			<LI>Accepts a dictionary (<a href=
+			"wts.misc.html#Dicts">Raw_Query_Dict</a>)
+			of fieldname -> value pairs as specified by the user on
+			a Query Form.  Validate the fields in this <I>raw</I>
+			dictionary, clean up values of some fields, and return
+			a tuple containing a <I>cleaned</I> dictionary
+			(<a href="wts.misc.html#Dicts">Cleaned_Query_Dict</a>)
+			of fieldname -> value pairs and a list of error strings
+			(or None if no errors occurred).
+			<LI>Validation includes checking that controlled
+			vocabulary fields contain valid values, that date
+			fields contain valid date ranges, and that numeric
+			fields contain numbers not alphanumeric strings.
+			<LI>Cleanup involves changing date fields to use a
+			standard date format and removing 'any' values from
+			controlled vocabulary fields (they don't have any
+			bearing on a query).  We also convert controlled
+			vocabulary fields from their text values to their
+			associated keys.  We convert ranges of tracking record
+			numbers to use relational operators.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> validate_TrackRec_Entry
+			(<a href="wts.misc.html#Dicts">Raw_TR_Dict</a>)
+			<UL>
+			<LI>Accepts a dictionary
+			(<a href="wts.misc.html#Dicts">Raw_TR_Dict</a>)
+			of fieldname -> value pairs.  Validate the fields in
+			this <I>raw</I> dictionary, clean up values of some
+			fields, and return a tuple containing a <I>cleaned</I>
+			dictionary (<a href="wts.misc.html#Dicts">Clean_TR_Dict
+			</a>) of fieldname -> value pairs and a list of
+			error strings (or None if no errors occurred).
+			<LI>Validation includes checking that controlled
+			vocabulary fields contain valid values, that date fields
+			contain valid dates, that numeric fields contain numbers
+			not alphanumerics strings, and that all required fields
+			have values..
+			<LI>Cleanup involves changing date fields to use a
+			standard date format, removing the "unknown" value from
+			multi-valued controlled vocab fields if another value
+			is also selected, removing extra ^M characters submitted
+			by the browser with the text fields, converting the
+			Depends On field to be a set of integer keys, and
+			wrapping any large text fields without HTML markups in
+			&lt;PRE&gt; and &lt;/PRE&gt;.
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> with_db_names (dict)
+			<UL>
+			<LI> returns a dictionary with key names as database
+			fieldnames, and with values from dict.
+			<LI> <I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> with_nice_names (dict)
+			<UL>
+			<LI> returns a dictionary with key names in the object
+			fieldname, and with values from dict.
+			<LI> <I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> getChildrenOf (TR #)
+			<UL>
+			<LI>return a list of tracking records on which the
+			specified one depends
+			<LI><I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> subTreeOf (TR #)
+			<UL>
+			<LI>return a list with information about all tracking
+			records on which the specified one depends
+			<LI><I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> graphSubTree (branch of
+			subtree, dictionary of TR keys and titles, line prefix,
+			flag about whether to show each TR's title)
+			<UL>
+			<LI>return a list of strings which graph (textually)
+			this branch (of the format returned by subTreeOf ())
+			<LI><I>internal use only</I>
+			</UL>
+		<P>
+		<LI><B><I>Module Function:</I></B> graphTree (TR #, boolean
+			flag indicating whether to show TR titles)
+			<UL>
+			<LI>return a list of strings which graph (textually)
+			the dependencies of the given tracking record
+			</UL>
+		<P>
+		</UL>
+	</UL><P>
+
+
+<LI><B>WriteLock</B>
+	<UL>
+	<LI><I>insight:</I> <B>A WriteLock object is a padlock for a single
+		(specified) file which will ensure that only one user of this
+		module can write to the given file at any time.</B><P>
+	<LI><I>purpose:</I> provides Python implementation of a file-locking
+		and file-writing mechanism, to prevent simultaneous edits of
+		the same file<P>
+	<LI><I>notes:</I> used by the HTGroup and HTPassword classes<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (filename to lock)
+			<UL>
+			<LI> creates a new WriteLock object and stores its
+			associated filename
+			</UL>
+		<LI>lock (optional maximum number of milliseconds to wait for
+			a lock)
+			<UL>
+			<LI> tries to lock the associated file, and retries as
+			longs as the specified time has not expired.  returns a
+			boolean indicating whether we successfully locked the
+			file.
+			</UL>
+		<LI>isLocked ()
+			<UL>
+			<LI> returns a boolean which indicates whether we have
+			a lock on the associated file
+			</UL>
+		<LI>unlock ()
+			<UL>
+			<LI> close and unlock the file given in the constructor,
+			and return a boolean indicating whether it was
+			successfully closed and unlocked.
+			</UL>
+		<LI>write (s)
+			<UL>
+			<LI> write the string "s" to the locked file, and return
+			a boolean indicating if it was written okay.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>WTS_DB_Object</B>
+	<UL>
+	<LI><I>insight:</I><B>A WTS_DB_Object object is one conceptual type of
+		record stored in the WTS database.  (currently only tracking
+		records)</B><P>
+		WTS objects (tracking records and possibly others in the future)
+		are conceptually fairly similar.  As such, it makes sense to
+		have them inherit certain properties and methods from a common
+		base class.  By defining an abstract WTS_DB_Object, we can then
+		say that:
+		<OL><LI> a tracking record <I>is-a</I> WTS_DB_Object
+		</OL><P>
+	<LI><I>purpose:</I> provide a common base class for various types of
+		conceptual records in the WTS database.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ ()
+			<UL>
+			<LI>creates a new WTS_DB_Object.  Initializes a few
+			basic fields.
+			</UL>
+		<LI>all_Attributes ()
+			<UL>
+			<LI> returns a list of strings, each of which is the
+			name of an attribute of this object, in the order they
+			should be displayed if displayed in a sequential list.
+			</UL>
+		<LI>allocate_Key ()
+			<UL>
+			<LI> allocates and stores a new key for the current
+			object.  Updates the database to reflect the key
+			assignment.
+			</UL>
+		<LI>dict ()
+			<UL>
+			<LI> returns a dictionary with all current attribute ->
+			value data.
+			</UL>
+		<LI>required_Attributes ()
+			<UL>
+			<LI> returns a list of strings, each of which is the
+			name of a required attribute of this object.  (These
+			must be filled in when entering data.)
+			</UL>
+		<LI>set_Defaults ()
+			<UL>
+			<LI>resets the default values for this object.
+			</UL>
+		<LI>set_Values (dict)
+			<UL>
+			<LI>sets the data values for this object to be those
+			specified in dict.  leaves those not specified as they
+			are.
+			</UL>
+		</UL>
+	</UL><P>
+<HR>
+<CENTER>
+<B><a name='supportingScreenClasses'>Supporting Screen Classes</a></B><BR>
+<I>The following classes are used to support the Screen Classes by providing
+common page elements (buttons, forms) and formatting (documents).</I><P>
+<a href='class.hierarchy.html'>Pictoral Class Hierarchy</a><P>
+</CENTER>
+<HR>
+
+<LI><B>Button</B>
+	<UL>
+	<LI><I>insight:</I> <B>A Button object is a named, user-clickable
+		button on an HTML form, which may respond to an onClick
+		event.</B><P>
+	<LI><I>purpose:</I> This class provides a means to easily implement
+		buttons which take an action when an onClick event occurs.
+		Javascript may be executed when the button is clicked.  While
+		this may all be done with Submit buttons, the simpler Button
+		construct provides a nice clean model.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI> __init__ (value, onClick handler)
+			<UL>
+			<LI> creates and initializes a Button object with the
+			given value as a displayed title, and with the given
+			onClick event handler string.
+			</UL>
+		<LI> __str__ ()
+			<UL>
+			<LI> returns a string of HTML text which represents the
+			button
+			</UL>
+		</UL>
+	</UL><P>
+<LI><B>MetaList</B>
+	<UL>
+	<LI><I>insight:</I> <B>A MetaList is an HTMLgen-compatible list of
+		Meta tags</B><P>
+	<LI><I>purpose:</I> Standard HTMLgen only allows one Meta tag per
+		document.  Usage of this class will allow us to have multiple
+		Meta tags per document.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI> __init__ (*meta_objects)
+			<UL>
+			<LI>creates and initializes a new MetaList object, then
+			adds any specified meta_objects to it.
+			</UL>
+		<LI> __str__ ()
+			<UL>
+			<LI>returns a string representing this MetaList as HTML
+			</UL>
+		<LI> append (meta_object)
+			<UL>
+			<LI>adds the given meta_object to this MetaList
+			</UL>
+		</UL>
+	</UL><P>
+<LI><B>WTS_Document</B> <I>- inherits from HTMLgen.SeriesDocument</I>
+	<UL>
+	<LI><I>insight:</I> <B>A WTS_Document is a single WTS web page.</B><P>
+	<LI><I>purpose:</I> A WTS_Document object extends the HTMLgen class
+		SeriesDocument to serve as a general base class for most WTS
+		web screens with:  a default title, a defined resource file, no
+		onLoad event handler, and a default CGI (rather than file)
+		output.  <P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI> __init__ (optional keyword arguments)
+			<UL>
+			<LI>creates and initializes a general WTS document.
+			Takes the same set of optional keyword parameters as is
+			supported by HTMLgen.SeriesDocument.  (see that
+			documentation for an up-to-date list)
+			</UL>
+		</UL>
+	</UL><P>
+<LI><B>WTS_Form</B> <I>- inherits from HTMLgen.Form</I>
+	<UL>
+	<LI><I>insight:</I> <B>A WTS_Form is a web form which is formatted to
+		WTS conventions.</B><P>
+	<LI><I>purpose:</I> The standard Form class in HTMLgen does not support
+		several formatting choices made for WTS screens.  This WTS_Form
+		class extends HTMLgen.Form to provide support for:  centered
+		buttons at the top and bottom of the form, any number of submit
+		buttons, and other buttons (based on the Button class) in
+		addition to the Submit and Reset buttons.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__init__ (optional cgi script name, optional keyword
+		arguments)
+			<UL>
+			<LI> creates and initializes a WTS_Form object.  The
+			optional CGI script name is the one that should be
+			invoked when a submit event occurs.  The optional
+			keywords are:  contents, cgi, submit, reset, target,
+			enctype, name, buttons, and onSubmit.
+			</UL>
+		<LI>__str__ ()
+			<UL>
+			<LI> returns a string of HTML text which represents
+			this WTS_Form object.
+			</UL>
+		</UL>
+	</UL><P>
+
+<HR>
+<CENTER>
+<B><a name='screenClasses'>Screen Classes</a></B><BR>
+<I>The following classes are used in producing HTML formatted screens to
+interact with the user via the WWW.</I><P>
+<a href='class.hierarchy.html'>Pictoral Class Hierarchy</a><P>
+</CENTER>
+<HR>
+
+<LI><B>Error_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>An Error_Screen object is an HTML page which
+		presents the user with a bulleted list of errors and gives
+		him/her the choice of correcting them or aborting the current
+		operation.</B><P>
+		Whenever the user may enter values to be processed
+		by WTS, whether in a Query Form, New TR Form, or Edit TR Form, 
+		it is possible for errors to occur.  Dates
+		can be in an unrecognized format, letters can be entered where
+		only integers are expected, controlled vocabulary values can be
+		misspelled or ignored, etc.  At such times, WTS must notify the
+		user of the error and allow him/her the choice of going back to
+		fix it or just aborting the operation.  This class provides a
+		standard mechanism for producing pages which suit this purpose.
+		<P>
+	<LI><I>purpose:</I> produces an Error Notification Form<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__setup__ (list of error strings, optional abort cgi URL,
+			optional back count, optional TR number)
+			<UL>
+			<LI>creates an Error Notification Form which displays a
+			bulleted list of error strings and two buttons:  Fix
+			and Abort.
+			<LI>The Fix button will go back in the history list to
+			the previous page
+			<LI>If the URL is specified, then the Abort button will
+			invoke the URL specified with the specified TR number as
+			a parameter.  Or, if no URL is specified, the Abort
+			button will go back in the browser's history list the
+			number of entries specified by the optional back count.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Exception_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>An Exception_Screen object is an HTML screen
+		which presents the user with information describing an
+		exception which occurred.</B><P>
+		Each cgi script in the WTS system is responsible for trapping
+		exceptions and handling them appropriately, or generating an
+		Exception_Screen to notify the user.  This screen simply gives
+		the user the exception type, value, and traceback, and then
+		asks him/her to notify the programmer.<P>
+	<LI><I>purpose:</I> The Exception_Screen class provides a uniform way
+		to present information about an exception which occurred.  The
+		traceback information is also nicely formatted in an HTML
+		table.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup (exception type, exception value, traceback list)
+			<UL>
+			<LI>sets up the Exception_Screen object
+			with bullets for the given type and value.  Includes a
+			table with traceback information.  (traceback list is
+			a list of tuples, each with filename, line number,
+			function, and text of the line.)
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>GoBack_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A GoBack_Screen object is a blank HTML page which
+		simply instructs the browser to go back a certain number of
+		pages in the history list.</B><P>
+		At times, WTS should automatically go back in the
+		history list a certain number of screens without bothering the
+		user for confirmation.  For example, after saving an edited
+		tracking record, the URL which does the saving should have a
+		means of telling the browser to go back a couple of screens to
+		return to the relevant Detail Form.  This class provides a means
+		of producing an HTML document which will automatically go back a
+		specified number of pages.<P>
+	<LI><I>purpose:</I>provide an easy means of telling the user's browser
+		to go back a certain number of entries in the history list.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__setup__ (optional back count)
+			<UL>
+			<LI>create a blank page (no displayed text) which
+			immediately issues a command to the user's browser,
+			telling it to go back the specified count of pages in
+			the history list.  (default back count is 1)
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>GoTo_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight</I><B>A GotTo_Screen is a screen which simply replaces
+		itself immediately with another specified one</B><P>
+	<LI><I>purpose:</I> generates a screen which does a "replace" action to
+		replace itself with another specified one<P>
+	<LI><I>methods</I>
+		<UL>
+		<LI>setup (url to load)
+			<UL>
+			<LI> generate a page which will immediately replace
+			itself with the page at the specified URL
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Message_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A Message_Screen object is an HTML page that
+		gives the user an HTML-formatted text message to notify him/her
+		of some condition.</B><P>
+		Sometimes WTS just needs to give a message to the
+		user and then take him/her back one or more screens.  For
+		example:  problems with locking a tracking record for editing.
+		This class provides a general means of creating screens for
+		these type of simple messages.  (ones with a text message and
+		only an Ok button which goes back a specified count of times)<P>
+	<LI><I>purpose:</I> generates a simple message notification page.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>__setup__ (message, optional integer back count)
+			<UL>
+			<LI>generates a page, with an Ok button which
+			goes back in the history list the specified number
+			of times.  <I>(window.history.go (-back count) )</I>
+			If the back count is not specified, then a value of
+			1 is assumed, to go back to the immediately preceding
+			screen.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>TrackRec_ShortForm_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A TrackRec_ShortForm_Screen object is an HTML page
+		which gives the user a simplified tracking record form where
+		he/she need only enter the most basic field.</B><P>
+	<LI><I>purpose:</I> generates a New Tracking Record - Short Form page<P>
+	<LI><I>methods:</I>
+	  <UL>
+	    <LI>__setup__ (TrackRec object)
+	      <UL><LI>creates a New Tracking Record - Short Form screen for the
+	      given TrackRec object (which should be new)
+	      </UL>
+	  </UL>
+	</UL><P>
+
+<LI><B>Password_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A Password_Screen object is an HTML page
+		which gives the user the chance to enter a new password (twice)
+		for his/her WTS login.</B><P>
+	<LI><I>purpose:</I>provides a way for a user to change his/her
+		passowrd<P>
+	<LI><I>methods:</I>
+	  <UL>
+	    <LI>__setup__ (user name)
+	      <UL><LI>generates a Change WTS Password Screen for the given
+		user name.</UL>
+	  </UL>
+	</UL><P>
+
+<LI><B>TrackRec_Detail_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A TrackRec_Detail_Screen object is an HTML page
+		which displays the entire contents of one tracking record.</B>
+		<P> A TrackRec_Detail_Screen inherits from WTS_Document.  This
+		class provides a way to generate a Tracking Record Detail Page
+		for the current record.  This class should be usable to display
+		the first tracking record checked on a TR Query Result Summary
+		Form, the next tracking record when the Next button is pressed
+		on a Detail Form, and the relevant tracking record from any
+		hotlinked TR #'s<P>
+	<LI><I>purpose:</I> generates a TR Detail Page for a single tracking
+		record<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup(string of TR #'s, boolean flag -- was there a previous
+			TR Detail screen?, boolean flag -- show an expanded
+			detail screen?)
+			<UL>
+			<LI>generates a TR Detail Page for the TrackRec with the
+			first number in the string of TR #'s.  If there are more
+			TR #'s in the string, it includes a "Next" button and
+			includes as a hidden field a string with the remaining
+			TR #'s.  If the first flag is 1, includes a "Previous"
+			button as well.  If the second flag is 1, then we show
+			an expanded detail page, rather than the traditional
+			default style.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>TrackRec_Edit_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A TrackRec_Edit_Screen object is an HTML page
+		which lets the user edit information for an existing tracking
+		record.</B><P>
+		An TR_Edit_Screen object represents an Edit Tracking Record page
+		for a given TrackRec object.<P>
+	<LI><I>purpose:</I> creates an Edit Tracking Record page for a given
+		TrackRec object.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup (TrackRec object)
+			<UL>
+			<LI>creates an Edit Tracking Record page for the
+			specified TrackRec object and with a next CGI script
+			of tr.edit.save.cgi
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>New_TrackRec_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A New_TrackRec_Screen object is an HTML page
+		which lets the user enter full information for a new tracking
+		record.  (the Long Form)
+		</B><P>
+		A New_TrackRec_Screen represents a New Tracking Record - Long
+		Form page which includes certain default values for tracking
+		record attributes.
+		<P>
+	<LI><I>purpose:</I>creates a New Tracking Record page<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup (TrackRec object)
+			<UL>
+			<LI>creates a New Tracking Record page, using the given
+			TrackRec object (which should be new) and a next CGI
+			script of tr.new.save.cgi.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>TR_Notification_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A TR_Notification_Screen object is an HTML page
+		which is used to inform the user of the TR # for a newly
+		created tracking record.</I><P>
+		This class provides a self-contained way to generate a tracking
+		record number notification screen for WTS.  This screen gives
+		the user the TR # for a new tracking record, and gives him/her
+		the option of going back to the WTS Home Page or of going back
+		to enter another new tracking record.<P>
+	<LI><I>purpose:</I>creates a screen which notifies the user of the
+		ID assigned to a new tracking record.<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup (tracking record number, optional routing message)
+			<UL>
+			<LI>creates a Tracking Record Number Notification Form,
+			which gives the user the tracking record number of the
+			given TrackRec object, and provides two buttons:  WTS
+			Home, and Another New TR.  If a routing message is
+			supplied, it is added to the screen so the user can
+			see how it was routed.
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B>Query_Result_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A Query_Result_Screen object is an HTML page which
+		displays selected information for each tracking record returned
+		as the result of a query.</B><P>
+		The Query_Result_Screen class provides a way to generate a TR
+		Query Result Summary page.  This class should be usable both to
+		display the initial result set and subsequent ones generated by
+		the Redisplay button.<P>
+	<LI><I>purpose:</I> creates a TR Query Result Summary page<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup (cleaned query dictionary, dictionary of hidden
+			fields, optional Status Date)
+			<UL>
+			<LI> Passes the cleaned dictionary on to the TrackRec
+			module which builds and executes queries, compiles the
+			results, and returns appropriate HTMLgen objects for
+			the table of query results.  This class wraps those
+			objects up with other needed formatting objects and any
+			specified hidden fields to compose a TR Query Results
+			Summary page.  If the Status Date is not None, then we
+			show it at the top of the page.
+			</UL>
+		</UL>
+	</UL><P>
+<LI><B>Status_Grid_Screen</B> - <I>inherits from WTS_Document</I>
+	<UL>
+	<LI><I>insight:</I><B>A Status_Grid_Screen object is an HTML page
+		which shows a grid of Status by Area or Type
+		</B><P>
+	<LI><I>purpose:</I>creates a Status Grid page<P>
+	<LI><I>methods:</I>
+		<UL>
+		<LI>setup (row type -- "Area" or "Type", date range, HTMLgen
+			table)
+			<UL>
+			<LI>Wraps up the HTMLgen table in an HTML page, with
+			headings, titles, and buttons determined by the "row
+			type" and the "date range".
+			</UL>
+		</UL>
+	</UL><P>
+
+<LI><B><I>Module Function:</I></B> gen_Exception_Screen (filename)
+	<UL>
+	<LI> takes the given filename, wraps it in a message stating that it
+	caught an exception, and sends it out using an Exception_Screen object
+	</UL><P>
+<LI><B><I>Module Function:</I></B> gen_GoBack_Screen (optional back count)
+	<UL>
+	<LI> The default is:  back count = 1.  Generates and sends out a screen
+	that immediately goes back the specified number of screens.
+	</UL><P>
+<LI><B><I>Module Function:</I></B> gen_Message_Screen (page title, message,
+	optional back count)
+	<UL>
+	<LI> The default back count is 1.  Builds a page with the given title,
+	which displays the given message, and which goes back the given number
+	of screens when an Ok button is clicked.
+	</UL><P>
+</OL>
+</BODY>
+</HTML>

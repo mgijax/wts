@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# generate pdf versions of FrameMaker files within WTS
+
+# run ONLY from within the admin directory
+
+cd ..		# go to root of WTS hierarchy and remember that dir
+TOP=`pwd`
+
+echo "Converting FrameMaker docs to PDF..."
+for dir in system_docs www/userdocs
+do
+	cd $dir
+	echo "...in `pwd`"
+	rm *pdf
+	/mgi/software/bin/fmconvert --pdf *fm
+	cd $TOP
+done

@@ -1,0 +1,29 @@
+<HTML>
+<HEAD>
+<TITLE>WTS: Maintenance Concerns</TITLE>
+</HEAD><BODY>
+<H2>WTS: Maintenance Concerns</H2>
+<OL>
+<LI><B>Record Locking and Key Assignment need to be atomic operations</B><P>
+
+This is a general problem within MGI.  We need to ensure that we can do a
+"select", a test, and an "update" as a single operation when assigning
+keys or locking records.  Once the group finds a general solution, we will
+need to update WTS code in:
+	<UL>
+	<LI>TrackRec.py : lock (), unlock ()
+	<LI>WTS_DB_Object.py : allocate_Key ()
+	</UL>
+
+<P>
+<LI><B>Names of help files are hard-coded</B><P>
+
+We are tying hard-coded filenames in TrackRec.py (HELP_FILES) to files which
+are expected to be in the file system.  If we need to change one of these
+filenames, then we need to change the value in:
+	<UL>
+	<LI>TrackRec.py : HELP_FILES
+	<LI>wts.screens.py : gen_Help_Screens ()
+	</UL>
+</OL>
+</BODY></HTML>

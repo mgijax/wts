@@ -1,0 +1,63 @@
+<HTML>
+  <HEAD>
+    <TITLE>Semantics for WTS: Tracking Record Query Form</TITLE>
+  </HEAD>
+  <BODY BGCOLOR=ffffff TEXT=000000 LINK=006666 VLINK=666666 ALINK=ff0000>
+  <CENTER>
+    <H2>Semantics for fields on WTS: Tracking Record Query Form</H2>
+  </CENTER>
+
+  <H3>Text fields:</H3>
+
+  Text fields <I>(excluding those for tracking record numbers)</I> currently
+  allow the user to enter a single word or phrase
+  which must appear somewhere in the given field.  (The system adds a <i>%</I>
+  to each end of the string and uses a sql <i>like</i> clause.)<P>
+  The <I>TR #</I> field accepts a single tracking record number, a
+  comma-separated list of tracking record numbers, a range of tracking record
+  numbers identified with a hyphen (or .. or ...), or a combination thereof.
+  (for example:
+  0001, 3, 5 - 0010, 0015)  Leading zeroes are optional, and the 'TR' prefix is
+  implied; the user only needs to type the integer portion of the TR #.
+  It is also valid to omit either the starting or stopping TR #,
+  to represent 'all before X' or 'all after X'.  (open ended ranges)<P>
+
+  <H3>Controlled vocabularies:</H3>
+
+  Whenever multiple items are selected from a controlled vocabulary field,
+  the search is conducted using a logical OR relationship with those values.
+  For example, selecting both <I>small</I> and <I>medium</I> in the Size box
+  would look for tracking records of either small or medium size.<P>
+
+  For many controlled vocabularies, there is an <I>any</I> option.  Selecting
+  only this option will allow any value for that field to appear in the query
+  results.  However, selecting another option along with <I>any</I> will cause
+  the <I>any</I> to be ignored.  For example, selecting <I>any</I> and
+  <I>small</I> will only display projects with a <I>small</I> size.<P>
+
+  For several controlled vocabularies, there is also a checkbox for "Not".
+  Clicking that checkbox and selecting one or more items from the vocab list
+  will look for tracking records which have values other than those selected.<P>
+
+  <H3>Dates and times:</H3>
+
+  A single datetime value may be entered in a variety of formats, although
+  only dates are recognized on the query form (no times).  The following are all
+  valid representations for the first day of June this year:
+	<UL><LI>6/1/98<LI>June 1, 1998<LI>1 Jun 98<LI>6/1/1998</UL>
+  In this query form, the user is not able to enter times.  When a date is
+  entered, it is assumed to include that entire day.  The user may also
+  specify a range of dates by separating two dates with - or .. or ... .
+  It is also valid to omit either the starting or stopping date,
+  to represent 'all before X' or 'all after X'.  (open ended ranges)  For
+  example, the following are all valid entries in a date query field:
+  <UL><LI>6/11/97 .. June 30, 1997<LI>06/01/97 ... 7/1/97<LI>June 1, 1997
+    <LI>.. 6/1/97<LI>8/5/97...</UL>
+  <I>Notes:<P>
+  ... for two-digit years (yy), yy is interpreted as 19yy if yy >= 90, and
+  as 20yy otherwise<P>
+  ... datetime fields returned by a query will be displayed using
+  the format: mm/dd/yyyy hh:mm PM</I>
+  <P>
+  </BODY>
+</HTML>
