@@ -59,12 +59,16 @@ USAGE = \
 		wts --getField <tr #> <fieldname>
 		wts --locks
 		wts --new
+		wts --newMinimal <Title> <Status>
 		wts --plainTree <tr #>
 		wts --queryTitle <query string>
 		wts --routing
 		wts --setField <tr #> <fieldname> <field value>
 		wts --tree <tr #>
 		wts --unlock <tr #>
+
+	For working with the MASS-T, you can substitute masst for wts in each
+	of the above examples.
 
 	For an explanation of these options, see the FAQ page in the WTS
 	web interface.
@@ -93,7 +97,7 @@ import Template_File
 import Controlled_Vocab
 import Category
 
-error = 'WTS command-line error'
+cmdError = 'WTS command-line error'
 
 ###--- Exit Codes ---###
 
@@ -104,6 +108,7 @@ ERR_TR = -4		# error occurred while using the TrackRec module
 ERR_LOCKED = -5		# TR was already locked
 ERR_PARSING = -6	# error in parsing the TR Number specification
 ERR_MISSING = -7	# specified TR is not in the database
+ERR_CMDLINE = -8	# miscellaneous error detected by the cmd line int.
 
 # -- supporting functions --
 
@@ -419,6 +424,49 @@ def validateAndSave (
 	else:
 		tr.save ()			# save the updated record
 	return
+
+
+def createMinimalTR (
+	title,		# string; value for the Title field
+	status		# string; value for the Status field
+	):
+	# Purpose: create a new TR, validate the 'title' and 'status' entries,
+	#	then save the TR
+	# Returns: string; the TR number which was assigned to the new TR
+	# Assumes: nothing
+	# Effects: updates the database by adding a new TR
+	# Throws: propagates 'TrackRec.error' if an error occurs in data
+	#	validation; raises 'cmdError' if a problem occurs when saving
+	#	the new TR
+
+	# validate and clean up the parameter values
+
+	areas = Controlled_Vocab.cv['CV_WTS_Area']
+	types = Controlled_Vocab.cv['CV_WTS_Type']
+	priorities = Controlled_Vocab.cv['CV_WTS_Priority']
+	sizes = Controlled_Vocab.cv['CV_WTS_Size']
+
+	new_values = {
+		'Title' : title,
+		'Status' : status,
+		'Requested By' : os.environ['REMOTE_USER'],
+		'Area' : areas.keyToName (areas.default_key()),
+		'Type' : types.keyToName (types.default_key()),
+		'Priority' : priorities.keyToName (priorities.default_key()),
+		'Size' : sizes.keyToName (sizes.default_key()),
+		}
+	clean_dict = TrackRec.validate_TrackRec_Entry (new_values)
+
+	# set the new values in a new "tr"
+
+	tr = TrackRec.TrackRec()
+	tr.set_Values (clean_dict)
+
+	try:
+		tr.save ()
+	except wtslib.sqlError:
+		raise cmdError, 'Could not save new TR'
+	return tr.num()
 
 
 # ----- END: supplemental functions for editing and creating tracking records
@@ -753,14 +801,6 @@ def updateRouting (
 					print "\t* %s" % error
 				print "Please try again."
 	category.save ()
-
-	# now we need to regenerate the help file for categories...
-
-	print "Updating corresponding help file..."
-	Controlled_Vocab.create_Include_File ('CV_WTS_Category',
-		os.path.join (Configuration.config['WTS_PATH'],
-			'www/userdocs/help/cv.category.html'),
-		'Category')
 	return
 
 def setField (
@@ -778,7 +818,8 @@ def setField (
 
 	tr = TrackRec.TrackRec (TR)
 	if tr.setAttribute (field, value) == 0:
-		raise error, 'Failed -- could not set %s for %s' % (field, TR)
+		raise cmdError, \
+			'Failed -- could not set %s for %s' % (field, TR)
 
 	vals = TrackRec.validate_TrackRec_Entry (tr.dict())
 	tr.set_Values (vals)
@@ -901,7 +942,7 @@ if __name__ == '__main__':
 	options, error_flag = wtslib.parseCommandLine (sys.argv,
 		[ 'dir=', 'display=', 'edit=', 'locks', 'new', 'unlock=',
 		  'fixTC=', 'tree=', 'simpleTree=', 'routing', 'batchInput=',
-		  'getField=2', 'setField=3', 'addNote=',
+		  'getField=2', 'setField=3', 'addNote=', 'newMinimal=2',
 		  'queryTitle=', 'addNoteFromFile=2' ])
 	try:
 		# Now, because of the was the interface is defined, we can only
@@ -993,6 +1034,11 @@ if __name__ == '__main__':
 			[tr_num, filename] = options['addNoteFromFile']
 			addNoteFromFile (tr_num, filename)
 
+		elif options.has_key ('newMinimal'):
+			[title, status] = options['newMinimal']
+			trkey = createMinimalTR (title, status)
+			print 'Created new TR%s' % trkey
+
 	except ValueError:
 		error ("Cannot parse tracking record number %s" % raw_tr_num)
 		sys.exit (ERR_PARSING)
@@ -1012,3 +1058,7 @@ if __name__ == '__main__':
 	except IndexError:
 		error ("Cannot find TR in database")
 		sys.exit (ERR_MISSING)
+
+	except cmdError, message:
+		error (message)
+		sys.exit (ERR_CMDLINE)
