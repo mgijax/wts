@@ -5,7 +5,29 @@
 # to the previous directory when done.  This workaround was needed as a result
 # of directory restructuring with WTS 1.5.
 
-CURDIR=`pwd`
-cd /mgi/all/wts/admin
-wts.py $*
-cd $CURDIR
+CURDIR=`pwd`		# remember the current directory so we can come back
+
+# force the user to set a WTS_PATH environment variable
+
+if [ "x$WTS_PATH" != "x" ]; then
+	cd $WTS_PATH/admin
+else
+	echo "Your must set your WTS_PATH environment variable"
+	exit -1
+fi
+
+# We need to ensure that any command-line parameters are enclosed in quotes,
+# so that multi-word parameters are handled correctly.  (eg- "Progress Notes")
+
+s=""				# build the command-line options in 's'
+while [ $# -gt 0 ];
+do
+	s=$s' "'$1'"'
+	shift
+done
+
+./wts.py $s		# execute the actual Python WTS command line and
+EXITCODE=$?		# remember its exit code so we can propagate it later
+
+cd $CURDIR		# bounce back to our starting directory
+exit $EXITCODE		# and propagate the wts.py exit code
