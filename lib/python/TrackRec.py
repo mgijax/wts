@@ -32,6 +32,7 @@
 #	getStatusTable (row_type, date_range)
 #	opposite (item)
 #	parse_And_Merge (list of Query_Row_Dict, key name)
+#	queryTitle (query string)
 #	recompute_Closure ()
 #	remove (orig, del_item)
 #	save_WTS_TrackRec (values, method)		- internal use only
@@ -63,6 +64,7 @@ import Digraph
 import Set
 import Arc
 import ArcSet
+import Template
 
 
 #-GLOBALS-------------------------------------------------------------------
@@ -110,8 +112,7 @@ notLocked = "TrackRec.notLocked"
 	#			% (tracking record number, user who locked it,
 	#				when it was locked)
 
-HELP_URL = '../userdocs/help/'	# standard URL string which points to the
-				# directory containing the WTS help files
+HELP_URL = '../searches/help.cgi?req=%s'	# standard URL string for help
 
 CHMOD = '/usr/bin/chmod'			# full path to chmod command
 CHGRP = '/usr/bin/chgrp'			# full path to chgrp command
@@ -306,6 +307,9 @@ NO_TEXT_EDIT = [ 'TR Nr', 'Status Staff', 'Modification Date', 'Directory',
 
 #-CLASS AND METHODS---------------------------------------------------------
 
+class Raw_TD (HTMLgen.TD):
+	html_escape = 'NO'
+
 class TrackRec (WTS_DB_Object.WTS_DB_Object):
 	# Concept:
 	#	IS:	A TrackRec object is one complete tracking record for
@@ -375,6 +379,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 	#		allocate_Key ()				X
 	#		dict ()					X
 	#		getRoutingMessage ()
+	#		getAttribute (attribute name)
 	#		html_Display ()
 	#		html_Edit_LongForm ()
 	#		html_New_ShortForm ()
@@ -387,6 +392,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 	#			items)
 	#		required_Attributes ()			X
 	#		save ()
+	#		setAttribute (attribute name, value)
 	#		set_Defaults ()				X
 	#		set_Values (dictionary of attributes
 	#			& values)
@@ -559,6 +565,72 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		return self.data ['Directory'] is not None
 
 
+	def getAttribute (self,
+		nice_name	# fieldname, one of those in 'ATTRIBUTES'
+		):
+		# Purpose: retrieve the value of a particular field
+		# Returns: string value of the field, or None if the fieldname
+		#	is unknown
+		# Assumes: nothing
+		# Effects: nothing
+		# Throws: nothing
+
+		if self.data.has_key (nice_name):
+			return self.data[nice_name]
+		return None
+
+
+	def setAttribute (self,
+		nice_name,	# string; a fieldnames in 'ATTRIBUTES'
+		value		# string; the new value for the field
+		):
+		# Purpose: set the field specified by 'nice_name' to equal the
+		#	given 'value'
+		# Returns: boolean; 0 if not okay, 1 if okay
+		# Assumes: nothing
+		# Effects: updates self.data
+		# Throws: nothing
+		# Notes: For multi-valued controlled vocabulary fields, we
+		#	provide special handling for '+' and '-' operators.
+		#	If 'value' contains a '+' before a specified CV term,
+		#	then we add that term.  If 'value' contains a '-'
+		#	before a CV term, then we remove that term.  If a +
+		#	or - is specified for at least one field, then it must
+		#	be specified for each field.  If 'value' does not use
+		#	a '+' or '-', then we replace the field's value.
+		# Examples:
+		#	tr.setAttribute ('Staff', 'jsb, tcw')
+		#		sets the Staff list to be 'jsb, tcw'
+		#	tr.setAttribute ('Staff', '+jsb, -tcw')
+		#		adds jsb to the existing Staff list, and
+		#		removes tcw if he is in it.
+
+		plusMinus = regex.compile ('[+-]')
+		if not self.data.has_key (nice_name):
+			return FALSE
+
+		if nice_name in SINGLE_VALUED_CV:
+			value = regsub.gsub('[+-]', '', value)
+			self.set_Values ( {nice_name : value} )
+
+		elif nice_name in MULTI_VALUED:
+			if plusMinus.search (value) == -1:
+				self.set_Values ( {nice_name : value} )
+			else:
+				changes = regsub.split (value, ' *, *')
+				for c in changes:
+					if c[0] == '+':
+						self.addToCV(nice_name, c[1:])
+					elif c[0] == '-':
+						self.removeFromCV (nice_name,
+							c[1:])
+					else:
+						return FALSE
+		else:
+			self.set_Values ( {nice_name : value} )
+		return TRUE
+
+
 	def getRoutingMessage (self):
 		# Purpose: get the message which serves as a simple summary of
 		#	this tracking record (to be used in sending e-mails
@@ -621,13 +693,12 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		summary_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['TR Nr'],
+				HTMLgen.Href (HELP_URL % 'TR_Nr',
 					HTMLgen.Bold ('TR #')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['TR Nr']) ), \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Modification Date'],
+				HTMLgen.Href (HELP_URL % 'Modification_Date',
 					HTMLgen.Bold ('Modification Date')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data['Modification Date']))))
@@ -636,7 +707,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		summary_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Title'],
+				HTMLgen.Href (HELP_URL % 'Title',
 					HTMLgen.Bold ('Title')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Title']),
@@ -650,18 +721,17 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		general_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Area'],
+				HTMLgen.Href (HELP_URL % 'Area',
 					HTMLgen.Bold ('Area')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Area']) ), \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Type'],
+				HTMLgen.Href (HELP_URL % 'Type',
 					HTMLgen.Bold ('Type')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Type']) ), \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Needs Attention By'],
+				HTMLgen.Href (HELP_URL % 'Needs_Attention_By',
 					HTMLgen.Bold (
 						'Needs Attention By (date)')), \
 				HTMLgen.Text (' '), \
@@ -672,25 +742,22 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		general_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Priority'],
+				HTMLgen.Href (HELP_URL % 'Priority',
 					HTMLgen.Bold ('Priority')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Priority']) ), \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Requested By'],
+				HTMLgen.Href (HELP_URL % 'Requested_By',
 					HTMLgen.Bold ('Req By')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Requested By']) ), \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Status'],
+				HTMLgen.Href (HELP_URL % 'Status',
 					HTMLgen.Bold ('Status')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Status']),
 				HTMLgen.Text (' - '),
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Status Date'],
+				HTMLgen.Href (HELP_URL % 'Status_Date',
 					HTMLgen.Bold ('Date')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Status Date']),
@@ -701,7 +768,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# left cell:
 
 		row = HTMLgen.TR (HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Size'],
+				HTMLgen.Href (HELP_URL % 'Size',
 					HTMLgen.Bold ('Size')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Size']) ))
@@ -710,8 +777,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# format the dependencies by appending a 'TR' to each number,
 		# and by making each a link the the detail screen for that TR.
 
-		cell = HTMLgen.TD (HTMLgen.Href (HELP_URL + \
-			HELP_FILES ['Depends On'],
+		cell = HTMLgen.TD (HTMLgen.Href (HELP_URL % 'Depends_On',
 			HTMLgen.Bold ('Depends On')), HTMLgen.Text (' ') )
                 if self.data.has_key ('Depends On'):
 			list = self.data ['Depends On'].values ()
@@ -732,8 +798,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# right cell:		
 
 		row.append (HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Directory'],
+				HTMLgen.Href (HELP_URL % 'Directory',
 					HTMLgen.Bold ('Directory')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.RawText (str(self.data ['Directory']))))
@@ -743,7 +808,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		general_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Staff'],
+				HTMLgen.Href (HELP_URL % 'Staff',
 					HTMLgen.Bold ('Staff')), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Text (self.data ['Staff']) ), \
@@ -810,14 +875,14 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 				tbl.append (HTMLgen.TR (HTMLgen.TH (title,
 					colspan = 3)))
 				tbl.append (HTMLgen.TR (
-					HTMLgen.TH (HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['TR Nr'],
+					HTMLgen.TH (HTMLgen.Href (HELP_URL % \
+						'TR_Nr',
 						HTMLgen.Bold ('TR #'))),
-					HTMLgen.TH (HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['Title'],
+					HTMLgen.TH (HTMLgen.Href (HELP_URL % \
+						'Title',
 						HTMLgen.Bold ('Title'))),
-					HTMLgen.TH (HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['Status'],
+					HTMLgen.TH (HTMLgen.Href (HELP_URL % \
+						'Status',
 						HTMLgen.Bold ('Status')))))
 
 				for row in rows:
@@ -842,8 +907,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		# project definition
 
-		objects.append ( HTMLgen.Href (HELP_URL + \
-			HELP_FILES ['Project Definition'],
+		objects.append ( HTMLgen.Href (HELP_URL % 'Project_Definition',
 			HTMLgen.Bold ('Project Definition:')) )
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.RawText (
@@ -853,8 +917,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		# progress notes
 
-		objects.append ( HTMLgen.Href (HELP_URL + \
-			HELP_FILES ['Progress Notes'],
+		objects.append ( HTMLgen.Href (HELP_URL % 'Progress_Notes',
 			HTMLgen.Bold ('Progress Notes:')) )
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.RawText (self.data ['Progress Notes']))
@@ -868,8 +931,8 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		history = remove (history, '')
 
 		if len (history) > 0:
-			objects.append ( HTMLgen.Href (HELP_URL + \
-				HELP_FILES ['Status History'],
+			objects.append ( HTMLgen.Href (HELP_URL % \
+				'Status_History',
 				HTMLgen.Bold (
 					'Status History: (newest first)')) )
 			objects.append ( HTMLgen.BR () )
@@ -920,9 +983,9 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
                 global HELP_URL, HELP_FILES
 
-		DATE_SIZE = 20		# size of a date box
 		TEXT_ROWS = 30		# rows in a text area
 		TEXT_COLS = 80		# columns in a text area
+		DATE_SIZE = 20		# size of a date box
 		SELECT_ROWS = 5		# rows in a multi-select box
 
 		# get a reference to the current controlled vocabulary module
@@ -964,16 +1027,15 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 			summary_table.append (HTMLgen.TR (
 				HTMLgen.TD (
-					HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['Routing'],
+					HTMLgen.Href (HELP_URL % 'Routing',
 						'Route To'),
 					HTMLgen.Text (' '),
 					HTMLgen.Select (category_list,
 						name='Routing',
 						selected = [ route_to ]) ),
 				HTMLgen.TD (
-                	                HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['Date'], 'Date'),
+                	                HTMLgen.Href (HELP_URL % 'Date', \
+						'Date'),
 					HTMLgen.Text (' '), \
 					HTMLgen.Text (wtslib.current_Time ()))))
 		else:
@@ -982,13 +1044,12 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 			summary_table.append (HTMLgen.TR (
 				HTMLgen.TD (
-                                	HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['TR Nr'], 'TR #'),
+                                	HTMLgen.Href (HELP_URL % 'TR_Nr', \
+						'TR #'),
 					HTMLgen.Text (' '),
 					HTMLgen.Text (self.data ['TR Nr']) ),
 				HTMLgen.TD (
-					HTMLgen.Href (HELP_URL + \
-						HELP_FILES ['Forwarding'],
+					HTMLgen.Href (HELP_URL % 'Forwarding',
 						'Forward TR'),
 					HTMLgen.Text (' '),
 					HTMLgen.Select (category_list,
@@ -998,7 +1059,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		summary_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + HELP_FILES ['Title'],
+                                HTMLgen.Href (HELP_URL % 'Title',
 					'Title'), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Input (type='text', \
@@ -1016,7 +1077,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		general_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + HELP_FILES ['Area'],
+                                HTMLgen.Href (HELP_URL % 'Area',
 					'Area'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
@@ -1025,7 +1086,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					name='Area',
 					selected = selArea) ),
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + HELP_FILES ['Type'],
+                                HTMLgen.Href (HELP_URL % 'Type',
 					'Type'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
@@ -1034,8 +1095,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					name='Type',
 					selected = selType) ),
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + \
-                                        HELP_FILES ['Needs Attention By'],
+                                HTMLgen.Href (HELP_URL % 'Needs_Attention_By',
 					'Needs Attention By (date)'), \
 				HTMLgen.BR (), \
 				HTMLgen.Input (type='text', size=DATE_SIZE, \
@@ -1049,8 +1109,8 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		row_2 = HTMLgen.TR ( \
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + \
-                                        HELP_FILES ['Priority'], 'Priority'), \
+                                HTMLgen.Href (HELP_URL % 'Priority', \
+					'Priority'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
 					CV ['CV_WTS_Priority'].pickList ( \
@@ -1058,8 +1118,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					name='Priority',
 					selected = selPriority)),
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + \
-                                        HELP_FILES ['Requested By'],
+                                HTMLgen.Href (HELP_URL % 'Requested_By',
 					'Req By'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
@@ -1071,14 +1130,14 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# now, we need to do status, which has two components
 
 		item = HTMLgen.TD ( \
-                        HTMLgen.Href (HELP_URL + HELP_FILES ['Status'],
+                        HTMLgen.Href (HELP_URL % 'Status',
 				'Status'), \
 			HTMLgen.BR (), \
 			HTMLgen.Select ( \
 				CV ['CV_WTS_Status'].pickList (selStatus),
 				name='Status', selected = selStatus),
 			HTMLgen.BR (),
-                        HTMLgen.Href (HELP_URL + HELP_FILES ['Status Date'],
+                        HTMLgen.Href (HELP_URL % 'Status_Date',
 				'Date'), \
 			HTMLgen.BR () )
 
@@ -1115,7 +1174,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# first, add the cell for the Size field
 
 		row3.append (HTMLgen.TD (
-                        HTMLgen.Href (HELP_URL + HELP_FILES ['Size'], 'Size'),
+                        HTMLgen.Href (HELP_URL % 'Size', 'Size'),
 			HTMLgen.BR (),
 			HTMLgen.Select (CV ['CV_WTS_Size'].pickList (selSize),
 				name='Size', selected = selSize) ) )
@@ -1123,7 +1182,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# second, add the Depends On field
 
 		row3.append (HTMLgen.TD (
-                        HTMLgen.Href (HELP_URL + HELP_FILES ['Depends On'],
+                        HTMLgen.Href (HELP_URL % 'Depends_On',
 				'Depends On'),
 			HTMLgen.BR (),
 			HTMLgen.Input (type='text', size=DATE_SIZE,
@@ -1138,8 +1197,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		if str (self.data ['Directory']) != 'None':
 			row3.append (HTMLgen.TD (
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Directory'],
+				HTMLgen.Href (HELP_URL % 'Directory',
 					'Directory'), \
 				HTMLgen.Text (' '),
 				HTMLgen.RawText (str(self.data ['Directory']))))
@@ -1173,8 +1231,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					name='Create_Directory_Flag',
 					value='Create_Directory_Flag'),
 				HTMLgen.Text ('Create '),
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Directory'],
+				HTMLgen.Href (HELP_URL % 'Directory',
 					'Project Directory'),
 				HTMLgen.BR (),
 				HTMLgen.Text (path) ))
@@ -1185,7 +1242,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		general_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + HELP_FILES ['Staff'],
+                                HTMLgen.Href (HELP_URL % 'Staff',
 					'Staff'), \
 				HTMLgen.BR (), \
 				HTMLgen.Select ( \
@@ -1209,13 +1266,13 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		proj_def = self.data ['Project Definition']
 		if proj_def is not None:
 			proj_def = wtslib.escapeAmps (proj_def)
-		objects.append ( HTMLgen.Href (HELP_URL + \
-                        HELP_FILES ['Project Definition'],
-			'Project Definition:') )
-		objects.append ( HTMLgen.BR () )
-		objects.append ( HTMLgen.Textarea (proj_def,
-			rows = TEXT_ROWS, cols = TEXT_COLS,
-			name = 'Project_Definition') )
+
+		objects.append (getTableWithTemplates ( \
+			'Project Definition',
+			'Project_Definition',
+			proj_def, '1', TEXT_ROWS, TEXT_COLS,
+			self.data['TR Nr']))
+
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.BR () )
 
@@ -1225,13 +1282,13 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		notes = self.data ['Progress Notes']
 		if notes is not None:
 			notes = wtslib.escapeAmps (notes)
-                objects.append ( HTMLgen.Href (HELP_URL + \
-			HELP_FILES ['Progress Notes'], 'Progress Notes:') )
-		objects.append ( HTMLgen.BR () )
-		objects.append ( HTMLgen.Textarea (notes,
-			rows = TEXT_ROWS,
-			cols = TEXT_COLS,
-			name = 'Progress_Notes') )
+
+		objects.append (getTableWithTemplates ( \
+			'Progress Notes',
+			'Progress_Notes',
+			notes, '2', TEXT_ROWS, TEXT_COLS,
+			self.data['TR Nr']))
+
 		objects.append ( HTMLgen.BR () )
 		objects.append ( HTMLgen.BR () )
 
@@ -1318,7 +1375,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		addressing_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Routing'],
+				HTMLgen.Href (HELP_URL % 'Routing',
 					'Route To'),
 				HTMLgen.Text (' '), \
 				HTMLgen.Select (category_list,
@@ -1326,8 +1383,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					selected = [ route_to ])
 					),
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Requested By'],
+				HTMLgen.Href (HELP_URL % 'Requested_By',
 					'Requested By'), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Select (user_list,
@@ -1336,7 +1392,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					) ) ) )
 		addressing_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-                                HTMLgen.Href (HELP_URL + HELP_FILES ['Title'],
+                                HTMLgen.Href (HELP_URL % 'Title',
 					'Title'), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Input (type='text', \
@@ -1366,15 +1422,14 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		data_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Priority'], 'Priority'),
+				HTMLgen.Href (HELP_URL % 'Priority', \
+					'Priority'),
 				HTMLgen.Text (' '), \
 				HTMLgen.Select (priority_list, \
 					selected = [ self.data ['Priority']],
 					name = 'Priority') ), \
 			HTMLgen.TD (
-				HTMLgen.Href (HELP_URL + HELP_FILES ['Size'],
-					'Size'), \
+				HTMLgen.Href (HELP_URL % 'Size', 'Size'), \
 				HTMLgen.Text (' '), \
 				HTMLgen.Select (size_list, name = 'Size') ),
 			HTMLgen.TD (
@@ -1386,8 +1441,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		data_table.append (HTMLgen.TR (
 			HTMLgen.TD (
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Needs Attention By'],
+				HTMLgen.Href (HELP_URL % 'Needs_Attention_By',
 					'Needs Attention By'),
 				HTMLgen.Text (' '),
 				HTMLgen.Input (type='text', size=20,
@@ -1397,13 +1451,11 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 				) ) )
 
 		data_table.append (HTMLgen.TR ( \
-			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL + \
-					HELP_FILES ['Project Definition'],
-					'Project Definition'), \
-				HTMLgen.BR (), \
-				HTMLgen.Textarea ('', rows=15, cols=70,
-					name='Project_Definition'),
+			HTMLgen.TD (getTableWithTemplates ( \
+					'Project Definition',
+					'Project_Definition',
+					'', '1', 15, 70,
+					self.data['TR Nr']),
 				colspan = 3) ) )
 
 		hidden_fields = [
@@ -3473,14 +3525,13 @@ def build_Query_Table (
 
 	tbl = HTMLgen.TableLite (align = 'center', border = 1, cellpadding = 5)
 
-	row = HTMLgen.TR (HTMLgen.TH (HTMLgen.Href (HELP_URL + \
-		HELP_FILES ['Display'], 'Display')))
+	row = HTMLgen.TR (HTMLgen.TH (HTMLgen.Href (HELP_URL % 'Display', \
+		'Display')))
 
 	# add the remaining column headers, each linked to its help file...
 
 	for col in columns:
-		row.append (HTMLgen.TH (HTMLgen.Href (HELP_URL + \
-			HELP_FILES [col], col)))
+		row.append (HTMLgen.TH (HTMLgen.Href (HELP_URL % col, col)))
 	tbl.append (row)
 
 	# now, add one row for each tracking record in the clean results
@@ -4828,6 +4879,26 @@ def lockedTrackRecList ():
 	return list
 		
 
+def queryTitle (
+	title		# string; value to look for in 'Title' field
+	):
+	# Purpose: return a string of comma-separated TR numbers which have
+	#	'title' in their Title field
+	# Returns: see Purpose
+	# Assumes: nothing
+	# Effects: queries the database
+	# Throws: propagates any exceptions thrown by wtslib.sql
+
+	results = wtslib.sql ('''
+		select _TR_key
+		from WTS_TrackRec
+		where tr_title like "%s%s%s"
+		order by _TR_key''' % ('%', title, '%'))
+	trs = []
+	for row in results:
+		trs.append (str(row['_TR_key']))
+	return string.join (trs, ',')
+
 def directoryOf (
 	tr_num	# integer; key of the tracking record whose directory we want
 	):
@@ -5616,6 +5687,66 @@ def getStatusTable (
 	tbl.append (row)
 
 	return tbl
+
+def getTemplateControls (field, suffix, tr_nr):
+	tmp = Template.TemplateSet(field)
+	if len(tmp) == 0:
+		return ''
+
+	op = 'doWhat%s' % suffix
+	tpl = 'whatTemplate%s' % suffix
+	go = 'GoButton%s' % suffix
+	undo = 'UndoButton%s' % suffix
+	tpl_set = 'templates%s' % suffix
+
+	list = [
+		'<SCRIPT>%s</SCRIPT>' % tmp.getJavascript (tpl_set),
+
+		'<SELECT NAME=%s>' % op,
+			'<OPTION VALUE="append"> Append',
+			'<OPTION VALUE="insert"> Insert at **',
+			'</SELECT>',
+
+		'Using Template',
+		tmp.getSelect(tpl),
+
+		'''<INPUT TYPE=button VALUE=Go NAME="%s"
+		onClick="doNotes(%s.options[%s.selectedIndex].value,
+			%s.options[%s.selectedIndex].value
+			, %s, %s, %s, '%s')">''' % \
+				(go,
+				op, op,
+				tpl, tpl, 
+				tpl_set, field, undo, tr_nr),
+
+		'''<INPUT TYPE=button VALUE=Undo NAME=%s
+		onClick="undoNotes(%s, %s)">''' % (undo, field, undo),
+		]
+	return string.join (list, '\n')
+
+def getTableWithTemplates (
+	flabel,		# field label as displayed to user
+	fname,		# name of field, as internal to HTML code
+	fvalue,		# value of the field
+	fsuffix,	# suffix to use when creating HTML objects
+	frows,		# number of rows in the textarea
+	fcols,		# number of columns in the textarea
+	tr_nr		# TR number
+	):
+	tbl = HTMLgen.TableLite (border=0, width="100%")
+	tbl.append (HTMLgen.TR (
+		HTMLgen.TD (HTMLgen.Href (HELP_URL % flabel,
+				'%s:' % flabel) ),
+		Raw_TD (getTemplateControls( \
+			fname, fsuffix, tr_nr),
+			align='right')
+		))
+	tbl.append (HTMLgen.TR (
+		HTMLgen.TD (HTMLgen.Textarea (fvalue,
+				rows = frows, cols = fcols, name = fname),
+			colspan = 2) ))
+	return tbl
+
 
 #-SELF TESTING CODE---------------------------------------------------------
 
