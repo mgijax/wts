@@ -227,7 +227,7 @@
 		to put it somewhere under your home directory.
 	<LI>Login to titan via rsh or telnet.
 	<LI>Change to the directory containing the tab-delimited file.
-	<LI>Use the "<CODE>wts.py --batchInput &lt;filename&gt;</CODE>" option
+	<LI>Use the "<CODE>wts --batchInput &lt;filename&gt;</CODE>" option
 		of the command line interface to load the file.
 	<LI>Data lines without errors will have their changes committed to WTS.
 	<LI>For data lines with errors, the error messages will be sent to
@@ -239,7 +239,7 @@
  	&lt;blank line&gt;
 </PRE>
 	<LI>Edit the data file to fix any errors, and re-run the
-	"<CODE>wts.py --batchInput &lt;filename&gt;</CODE>" command.
+	"<CODE>wts --batchInput &lt;filename&gt;</CODE>" command.
 	</OL><P>
 	Notes:
 	<OL>
@@ -292,52 +292,51 @@
 	that isn't defined, WTS looks for the EDITOR environment variable.  It
 	that is not defined either, it defaults to using 'vi'.<P>
 
-	Simply invoking <I>wts.py</I> (or its alias <I>wts</I>) with no
-	arguments will give you the usage options, of which there are
-	currently nine:<P>
+	Simply invoking <I>wts</I> with no arguments will give you the usage
+	options, of which there are currently nine:<P>
 	<UL>
-	<LI><I>wts.py --batchInput &lt;filename&gt;</I><BR>
+	<LI><I>wts --batchInput &lt;filename&gt;</I><BR>
 		Specifies a tab-delimited file to be read, parsed, and
 		processed as a batch of changes to multiple TRs.  (Discussed
 		in more detail in a separate FAQ entry)<P>
-	<LI><I>wts.py --dir &lt;tr #&gt;</I><BR>
+	<LI><I>wts --dir &lt;tr #&gt;</I><BR>
 		Finds and prints the name of the project directory for the
 		specified tracking record number.<P>
-	<LI><I>wts.py --display &lt;tr #&gt;</I><BR>
+	<LI><I>wts --display &lt;tr #&gt;</I><BR>
 		Displays a text representation of the tracking record with the
 		specified number.<P>
-	<LI><I>wts.py --edit &lt;tr #&gt;</I><BR>
+	<LI><I>wts --edit &lt;tr #&gt;</I><BR>
 		Loads the specified tracking record, sends a text
 		representation of it to a file, starts up your editor, and loads
 		in that file for you.  Once you are done editing and quit the
 		editor, WTS asks if you want to import the new info from the
 		file back into the database.<P>
-	<LI><I>wts.py --fixTC &lt;tr #&gt;</I><BR>
+	<LI><I>wts --fixTC &lt;tr #&gt;</I><BR>
 		Checks and (if there are problems) fixes the transitive closure
 		stored for the Depends On field for all tracking records related
 		to the one specified.<P>
-	<LI><I>wts.py --locks</I><BR>
+	<LI><I>wts --locks</I><BR>
 		Displays a text table giving information about all the
 		tracking records which are currently locked.<P>
-	<LI><I>wts.py --new</I><BR>
+	<LI><I>wts --new</I><BR>
 		Creates a blank tracking record, sends a text representation of
 		it to a file, starts up your editor, and loads in that file for
 		you.  Once you are done editing and quit the editor, WTS asks
 		if you want to import the new info from the file back into the
 		database.  Note that nothing is saved to the database unless
 		you decide (Yes) to import the information.<P>
-	<LI><I>wts.py --plainTree &lt;tr #&gt;</I><BR>
+	<LI><I>wts --plainTree &lt;tr #&gt;</I><BR>
 		Sends to stdout a text representation of a tree showing all
 		the dependencies under the specified tracking record, with
 		only the TR # shown for each.<P>
-	<LI><I>wts.py --routing</I><BR>
+	<LI><I>wts --routing</I><BR>
 		Allows you to change the e-mail addresses and Areas associated
 		with the various routing categories.<P>
-	<LI><I>wts.py --tree &lt;tr #&gt;</I><BR>
+	<LI><I>wts --tree &lt;tr #&gt;</I><BR>
 		Sends to stdout a text representation of a tree showing all
 		the dependencies under the specified tracking record, with
 		the TR # and Title shown for each.<P>
-	<LI><I>wts.py --unlock &lt;tr #&gt;</I><BR>
+	<LI><I>wts --unlock &lt;tr #&gt;</I><BR>
 		Unlocks the tracking record with the specified key, no matter
 		who has it locked for editing.  This should only be used when
 		you know that a lock has persisted in error.<P>
