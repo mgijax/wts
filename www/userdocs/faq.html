@@ -278,14 +278,9 @@
 	<P><HR>
     <LI><B><a name="commandLine">How can I use the command-line interface?</a>
 	</B><P>
-	The command-line interface is run on titan.  It requires that two
-	environment variables be set properly:
-	<PRE>
-	WTS_PATH	/mgi/all/wts
-	SYBASE		/opt/sybase
-	</PRE>
-	If you want to run the command-line interface from outside the
-	$WTS_PATH/admin directory, you can add $WTS_PATH/admin to your path.<P>
+	The command-line interface is run on titan.  It requires that your
+	environment be configured with a SYBASE variable (/opt/sybase/) and
+	that the wts or masst script be accessible in your PATH.<P>
 
 	The command-line interface allows you to choose an editor for WTS by
 	specifying its full path in the WTS_EDITOR environment variable.  If
