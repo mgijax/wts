@@ -145,7 +145,7 @@ def gen_Home_Page (
 
 	doc = screenlib.WTS_Document (cgi = 0,	# this document will go to a
 						# file, not a CGI response,
-		title = 'WTS 1.4: Home Page')	# with specified title.
+		title = 'WTS 1.5: Home Page')	# with specified title.
 
 	# section 1 - Reviewing Tracking Records
 	#	add a horizontal rule and then a centered heading
@@ -455,7 +455,7 @@ def gen_Query_Form (
 			# controlled vocabulary
 
 			HTMLgen.Select (['any'] + \
-				CV ['CV_WTS_' + field].ordered_names (),
+				CV ['CV_WTS_' + field].pickList (showAll=1),
 				name = field,	# fieldname to be submitted
 				size = 3,	# show 3 items in the pick list
 				multiple = 1,	# allow multiple selections
@@ -493,7 +493,7 @@ def gen_Query_Form (
 		# of other priorities
 
 		HTMLgen.Select (['any'] + \
-			CV ['CV_WTS_Priority'].ordered_names (),
+			CV ['CV_WTS_Priority'].pickList (showAll=1),
 			name = 'Priority',	# field to be submitted
 			size = 5,		# show 5 at a time
 			multiple = 1,		# allow multiple selections
@@ -509,7 +509,7 @@ def gen_Query_Form (
 		# pick list box has the 'any' option at the top of the list
 		# of other staff members
 
-		HTMLgen.Select (['any'] + CV ['CV_Staff'].ordered_names (),
+		HTMLgen.Select (['any'] + CV ['CV_Staff'].pickList(showAll=1),
 			name = 'Requested_By',	# name to be submitted
 			size = 5,		# show 5 at a time
 			multiple = 1,		# allow multiple selections
@@ -531,7 +531,7 @@ def gen_Query_Form (
 		# of other statuses
 
 		HTMLgen.Select (['any'] + \
-			CV ['CV_WTS_Status'].ordered_names (),
+			CV ['CV_WTS_Status'].pickList (showAll=1),
 			name = 'Status',	# fieldname to be submitted
 			size = 5,		# show 5 at a time
 			multiple = 1,		# allow multiple selections
@@ -557,7 +557,8 @@ def gen_Query_Form (
 		# pick list box has the 'any' option at the top of the list
 		# of other sizes
 
-		HTMLgen.Select (['any'] + CV ['CV_WTS_Size'].ordered_names (),
+		HTMLgen.Select (['any'] + \
+			CV ['CV_WTS_Size'].pickList (showAll=1),
 			name = 'Size',		# fieldname to be submitted
 			size = 5,		# show 5 sizes at once
 			multiple = 1,		# allow multiple selections
@@ -592,7 +593,8 @@ def gen_Query_Form (
 		# pick list box has the 'any' option at the top of the list
 		# of other staff members
 
-		HTMLgen.Select (['any'] + CV ['CV_Staff'].ordered_names (),
+		HTMLgen.Select (['any'] + \
+			CV ['CV_Staff'].pickList (showAll=1),
 			name = 'Staff',		# fieldname to be submitted
 			size = 5,		# show 5 at a time
 			multiple = 1,		# allow multiple selections
