@@ -5728,7 +5728,7 @@ def getTableWithTemplates (
 	):
 	tbl = HTMLgen.TableLite (border=0, width="100%")
 	tbl.append (HTMLgen.TR (
-		HTMLgen.TD (HTMLgen.Href (HELP_URL % flabel,
+		HTMLgen.TD (HTMLgen.Href (HELP_URL % fname,
 				'%s:' % flabel) ),
 		Raw_TD (getTemplateControls( \
 			fname, fsuffix, tr_nr),
