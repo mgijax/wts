@@ -37,7 +37,7 @@ class WTS:
 	#	try:
 	#		trs = wts.queryByTitle ('schema')
 	#		for tr in trs:
-	#			print tr, tr.getField (tr, 'Title')
+	#			print tr, wts.getField (tr, 'Title')
 	#	except error, message:
 	#		print 'An error occurred: %s' % error
 	#		print message
@@ -99,8 +99,7 @@ class WTS:
 		# Throws: propagates 'error' with the contents of stderr as
 		#	its value if the command fails
 
-		stdout = self.execute ('--addNoteFromFile %s %s' % (TR, path))
-		return stdout
+		return self.execute ('--addNoteFromFile %s %s' % (TR, path))
 
 	def newMinimal (self,
 		title,		# string; value for the Title field
@@ -115,9 +114,7 @@ class WTS:
 		# Throws: propagates 'error' with the contents of stderr as
 		#	its value if the command fails
 
-		stdout = self.execute ('--newMinimal "%s" "%s"' % (title,
-			status))
-		return stdout
+		return self.execute('--newMinimal "%s" "%s"' % (title,status))
 
 	def getField (self,
 		TR,		# string or integer; TR number
@@ -134,8 +131,7 @@ class WTS:
 		# Notes: For valid fieldnames, look at the keys of the 
 		#	NAME_TO_DB dictionary in WTS's TrackRec.py module
 
-		stdout = self.execute ('--getField %s "%s"' % (TR, fieldname))
-		return stdout
+		return self.execute ('--getField %s "%s"' % (TR, fieldname))
 
 	def getProjectDir (self,
 		TR		# string or integer; TR number
@@ -150,22 +146,25 @@ class WTS:
 		# Throws: propagates 'error' with the contents of stderr as
 		#	its value if the command fails
 
-		stdout = self.execute ('--dir %s' % TR)
-		return string.strip(stdout)
+		return self.execute ('--dir %s' % TR)
 
 	def getStaff (self,
 		TR		# string or integer; TR number
 		):
 		# Purpose: get the contents of the Staff field for the
 		#	specified 'TR'
-		# Returns: string; a comma-separated set of staff members
-		#	currently assigned to the specified 'TR'
+		# Returns: list of string; each string is a staff member
+		#	currently assigned to the specified 'TR'.  If no
+		#	staff members are assigned, the list will be empty.
 		# Assumes: nothing
 		# Effects: nothing
 		# Throws: propagates 'error' with the contents of stderr as
 		#	its value if the command fails
 
-		return self.getField (TR, 'Staff')
+		staffStr = self.getField (TR, 'Staff')
+		if staffStr == 'None':
+			return []
+		return map (string.strip, string.split (staffStr, ','))
 
 	def getStatus (self,
 		TR		# string or integer; TR number
@@ -194,7 +193,9 @@ class WTS:
 		#	its value if the command fails
 
 		stdout = self.execute ('--queryTitle %s' % inTitle)
-		return string.split(stdout, ',')
+		if stdout == '':
+			return []
+		return map (string.strip, string.split(stdout, ','))
 
 	def setField (self,
 		TR,		# string or integer; TR number
@@ -213,9 +214,8 @@ class WTS:
 		#		raise error, 'Tracking Record TR<TR #> was ' +
 		#		'already locked by <user> on <datetime>'
 
-		stdout = self.execute ("--setField %s '%s' '%s'" % (TR,
+		return self.execute ("--setField %s '%s' '%s'" % (TR,
 			fieldname, fieldvalue))
-		return string.strip(stdout)
 
 	###--- Private Methods ---###
 
@@ -224,8 +224,10 @@ class WTS:
 		):
 		# Purpose: PRIVATE method, used by other methods to invoke the
 		#	WTS command-line interface
-		# Returns: contents of stdout generated when the command-line
-		#	interface is run with the given 'args'
+		# Returns: string; contents of stdout generated when the
+		#	command-line interface is run with the given 'args'.
+		#	The string will have its leading and trailing white-
+		#	space removed.
 		# Assumes: nothing
 		# Effects: vary depending on 'args' -- may query or update the
 		#	database instance associated with the WTS instance
@@ -238,7 +240,7 @@ class WTS:
 			)
 		if exitcode:
 			self.raiseException (error, stderr)
-		return stdout
+		return string.strip (stdout)
 
 	def raiseException (self,
 		exception,	# string; the exception to raise
