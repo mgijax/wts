@@ -646,7 +646,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		if os.environ.has_key ('HTTP_HOST'):
 			host = os.environ ['HTTP_HOST']
 		else:
-			host = 'titan'
+			host = Configuration.config ['projectDirectoryServer']
 
 		s = "TR %s -- http://%s/wts/searches/tr.detail.cgi?" % \
 			(num, host)
