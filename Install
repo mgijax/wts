@@ -51,6 +51,8 @@ do
 			DATADIR=$value;;
 		RELNOTES)
 			RELNOTES=$value;;
+		EXE_NAME)
+			EXE_NAME=$value;;
 		[A-z]*)
 			;;	# other parms are not needed by Install
 	esac
@@ -113,6 +115,13 @@ do
 	refreshLink $TOP/www/data data
 	cd $TOP
 done
+
+# generate command-line interface
+
+cd admin
+echo "Generating command-line interface: $EXE_NAME"
+cp wrapper.source $EXE_NAME
+cd $TOP
 
 # generate user documentation
 
