@@ -89,6 +89,7 @@ import javascript
 
 RESOURCE_FILE = 'data/wts.rc'		# resource file
 WTS_HOME_PAGE = '../index.html'
+PREFIX = Configuration.config['PREFIX']
 
 #--CLASSES-----------------------------------------------------------------
 
@@ -843,7 +844,7 @@ class TrackRec_ShortForm_Screen (WTS_Document):
 		# Modifies:	self
 		'''
 		global WTS_HOME_PAGE
-		self.title = 'WTS: New Tracking Record - Short Form'
+		self.title = PREFIX + ': New Tracking Record - Short Form'
 
 		# get formatting info for the tracking record (as a list of
 		# HTMLgen objects)
@@ -852,10 +853,10 @@ class TrackRec_ShortForm_Screen (WTS_Document):
 
 		# insert Javascript code to facilitate watching for double-clix
 
-		self.script = HTMLgen.Script (code = \
-			javascript.js_millisecondsSinceEpoch + (
-			javascript.js_enoughTimeElapsed % (2000,
-			"Please remember not to double-click the Save button")))
+		self.script = [
+			HTMLgen.Script (src = "Notes.js"),
+			HTMLgen.Script (src = "wts.js"),
+			]
 
 		# create the form for the entry screen
 
@@ -865,7 +866,7 @@ class TrackRec_ShortForm_Screen (WTS_Document):
 				name = 'Save'), \
 			reset = HTMLgen.Input (type = 'reset'), \
 			buttons = [ Button ('Cancel', 'window.history.go (-1)'),
-				Button ('WTS Home',
+				Button (PREFIX + ' Home',
 				'window.location.href = "%s"' % WTS_HOME_PAGE)],
 			onSubmit = "return enoughTimeElapsed()")
 
@@ -914,7 +915,7 @@ class Password_Screen (WTS_Document):
 				value = 'Change',
 				name = 'Change'),
 			reset = HTMLgen.Input (type = 'reset'),
-			buttons = Button ('WTS Home',
+			buttons = Button (PREFIX + ' Home',
 				'window.location.href = "%s"' % WTS_HOME_PAGE))
 
 		frm.append (HTMLgen.P (),
@@ -964,21 +965,21 @@ class New_TrackRec_Screen (WTS_Document):
 		# Modifies:	self
 		'''
 		global WTS_HOME_PAGE
-		self.title = 'WTS: New Tracking Record Screen'
+		self.title = PREFIX + ': New Tracking Record Screen'
 
 		# prepare the list of extra buttons (the home page and the
 		# cancel button)
 
 		buttonList = [ Button ('Cancel', 'window.history.go (-1)'), 
-				Button ('WTS Home',
+				Button (PREFIX + ' Home',
 				'window.location.href = "%s"' % WTS_HOME_PAGE) ]
 
 		# insert Javascript code to facilitate watching for double-clix
 
-		self.script = HTMLgen.Script (code = \
-			javascript.js_millisecondsSinceEpoch + (
-			javascript.js_enoughTimeElapsed % (2000,
-			"Please remember not to double-click the Save button")))
+		self.script = [
+			HTMLgen.Script (src = "Notes.js"),
+			HTMLgen.Script (src = "wts.js"),
+			]
 
 		frm = WTS_Form ('tr.new.save.cgi', name = 'TrEntryForm',
 			submit = HTMLgen.Input (type = 'submit',
@@ -1021,8 +1022,8 @@ class TR_Notification_Screen (WTS_Document):
 		#		record and puts it in self
 		# Modifies:	self
 		'''
-		self.title = 'WTS: Tracking Record Number Notification ' + \
-			'Screen'
+		self.title = PREFIX + \
+			': Tracking Record Number Notification Screen'
 
 		# now, add the necessary message
 
@@ -1042,7 +1043,8 @@ class TR_Notification_Screen (WTS_Document):
 		# append the buttons (must be on a form)
 
 		frm = WTS_Form ()
-		frm.append (Button ('WTS Home', 'window.history.go (-2)'))
+		frm.append (Button (PREFIX + ' Home', \
+			'window.history.go (-2)'))
 		frm.append (Button ('Create Another New TR', \
 			'window.history.back ()'))
 		self.append (frm)
@@ -1087,7 +1089,7 @@ class TrackRec_Detail_Screen (WTS_Document):
 		#	database.
 
 		global WTS_HOME_PAGE
-		self.title = 'WTS: Tracking Record Detail Screen'
+		self.title = PREFIX + ': Tracking Record Detail Screen'
 
 		# take the first number from tr_numbers for display
 
@@ -1169,15 +1171,15 @@ class TrackRec_Detail_Screen (WTS_Document):
 
 		# finally, the WTS Home button...
 
-		button_list.append (Button ('WTS Home', \
+		button_list.append (Button (PREFIX + ' Home', \
 			'window.location.href="' + WTS_HOME_PAGE + '"'))
 
 		# insert Javascript code to facilitate watching for double-clix
 
-		self.script = HTMLgen.Script (code = \
-			javascript.js_millisecondsSinceEpoch + (
-			javascript.js_enoughTimeElapsed % (2000,
-			"Please remember not to double-click the Edit button")))
+		self.script = [
+			HTMLgen.Script (src = "Notes.js"),
+			HTMLgen.Script (src = "wts.js"),
+			]
 
 		# create the form for the tracking record
 
@@ -1249,14 +1251,14 @@ class TrackRec_Edit_Screen (WTS_Document):
 		#		it in self
 		# Modifies:	self
 		'''
-		self.title = 'WTS: Tracking Record Edit Screen'
+		self.title = PREFIX + ': Tracking Record Edit Screen'
 
 		# insert Javascript code to facilitate watching for double-clix
 
-		self.script = HTMLgen.Script (code = \
-			javascript.js_millisecondsSinceEpoch + (
-			javascript.js_enoughTimeElapsed % (2000,
-			"Please remember not to double-click the Save button")))
+		self.script = [
+			HTMLgen.Script (src = "Notes.js"),
+			HTMLgen.Script (src = "wts.js"),
+			]
 
 		# get HTMLgen objects for the specified tracking record (as a
 		# list of HTMLgen objects)
@@ -1274,7 +1276,8 @@ class TrackRec_Edit_Screen (WTS_Document):
 				'window.location.href="tr.bailout.cgi?' \
 				+ 'BackCount=2&TR_Nr=' + str (tr.num()) + \
 				'"'), \
-				Button ('WTS Home', 'window.location.href="' + \
+				Button (PREFIX + ' Home', \
+					'window.location.href="' + \
 				WTS_HOME_PAGE + '"') ],
 			onSubmit = "return enoughTimeElapsed()"
 			)
@@ -1327,7 +1330,7 @@ class Query_Result_Screen (WTS_Document):
 		#		record query result screen.
 		# Modifies:	self
 		'''
-		self.title = 'WTS: Tracking Record Query Results Screen'
+		self.title = PREFIX + ': Tracking Record Query Results Screen'
 
 		obj_list = TrackRec.build_Query_Table (clean_results)
 
@@ -1350,7 +1353,7 @@ class Query_Result_Screen (WTS_Document):
 					"tr.query.results.cgi'") ],
 			reset = HTMLgen.Input (type = 'reset', name = \
 				'Reset', value = 'Reset'),
-			buttons = [ Button ('WTS Home',
+			buttons = [ Button (PREFIX + ' Home',
 					'window.location.href="' + \
 					WTS_HOME_PAGE + '"'),
 				    Button ('Click All',
@@ -1437,10 +1440,11 @@ class Status_Grid_Screen (WTS_Document):
 		# Effects: adds to self -- only run this once!
 		# Throws: nothing
 
-		self.title = 'WTS: Status by %s Grid' % row_type
+		self.title = PREFIX + ': Status by %s Grid' % row_type
 
 		btns = []
-		btns.append (Button ('WTS Home', 'window.history.go (-2)'))
+		btns.append (Button (PREFIX + ' Home', \
+			'window.history.go (-2)'))
 		if row_type == 'Area':
 			other_type = 'Type'
 		else:
@@ -1454,6 +1458,37 @@ class Status_Grid_Screen (WTS_Document):
 			date_range, HTMLgen.P()))
 		frm.append (tbl, HTMLgen.P ())
 		self.append (frm)
+		return
+
+### End of Class: Status_Grid_Screen ###
+
+class Help_Screen (WTS_Document):
+	# Concept:
+	#	IS: an HTML-formatted page which shows a page of help
+	#	HAS: standard attributes inherited from WTS_Document
+	#	DOES: sends the page (self) to stdout
+
+	def setup (self,
+		fieldname,	# name of the field for which to display help
+		description,	# explanation of the field
+		toQuery,	# how to query the field
+		cvName		# name of the associated CV, if any
+		):
+		# Purpose: set up the innards of this page
+		# Returns: nothing
+		# Assumes: nothing
+		# Effects: adds to self -- only run this once!
+		# Throws: nothing
+
+		self.title = PREFIX + ': Help -- %s' % fieldname
+		terms = [
+			('Description', description + str(HTMLgen.P())),
+			('To Query', toQuery + str(HTMLgen.P())),
+			]
+		if cvName:
+			terms.append ( ('Controlled Vocabulary',
+				Controlled_Vocab.getCVtables (cvName)) )
+		self.append (HTMLgen.DefinitionList (terms))
 		return
 
 #--MODULE FUNCTIONS-------------------------------------------
@@ -1477,7 +1512,8 @@ def gen_Exception_Screen (filename):
 	value = str (sys.exc_value)
 	trace = traceback.extract_tb (sys.exc_traceback)
 
-	doc = Exception_Screen (title = 'WTS: Exception Caught by ' + filename)
+	doc = Exception_Screen (title = PREFIX + \
+		': Exception Caught by ' + filename)
 	doc.setup (type, value, trace)
 
 	# send the document to stdout, and delete it
