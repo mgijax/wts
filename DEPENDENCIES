@@ -1,0 +1,16 @@
+# Dependencies for ccr
+#
+
+#! MGI Products
+# Product	Tag	Comments
+# ------------------------------
+db.py		?	uses set_sqlLogin() and sql() functions - configurable
+Sybase Schema	?	assumes schema current with WTS version 1.5
+project dirs	?	data directories for WTS tracking records
+
+#! External Products
+# Product	Release	Comments
+# ------------------------------
+SunOS		5.6	(Solaris)
+Python		1.4
+Sybase ASE	11.5

@@ -1,0 +1,11 @@
+TAG: wts-1-0-0
+DATE: 05/25/2000
+STAFF: jsb
+RELEASE: Beta
+CHANGES:
+1) allowed retirement of controlled vocabulary terms (TR 858)
+2) clarified FAQ regarding command-line interface executable (TR 1092)
+3) fixed bug when creating new TR with dependencies (TR 1139)
+4) added URL to e-mail from routine feature (TR 1168)
+5) fixed bug in "Retrieve with Descendants" button on home page (TR 1236)
+6) converted to use the "db" library for database access (TR 1567)
