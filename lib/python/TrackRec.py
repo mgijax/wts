@@ -569,7 +569,9 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# Effects: nothing
 		# Throws: nothing
 
-		s = "TR %s\n\n" % self.num ()
+		num = self.num()
+		s = "TR %s -- http://titan/wts/searches/tr.detail.cgi?" % num
+		s = s + "TR=%s\n\n" % num
 		s = s + ("Title:    %s\n" % self.data ['Title'])
 		s = s + ("Priority: %s\n\n" % self.data ['Priority'])
 		s = s + ("Project Definition:\n-------------------\n\n%s\n" % \
@@ -5132,18 +5134,19 @@ def updateTransitiveClosure (
 
 	for sublist in wtslib.splitList (done.values (), 100):
 		done_str = wtslib.list_To_String (sublist)
-		old_closure_sublist = wtslib.sql ('''
-			select _TR_key, _Related_TR_key
-			from WTS_Relationship
-			where (relationship_type = %d) and
-				(transitive_closure = %d) and
-				((_TR_key in (%s)) or
-				(_Related_TR_key in (%s)))''' % \
-			(rel_type, TC_LINK, done_str, done_str))
+		if len(done_str) > 0:
+			old_closure_sublist = wtslib.sql ('''
+				select _TR_key, _Related_TR_key
+				from WTS_Relationship
+				where (relationship_type = %d) and
+					(transitive_closure = %d) and
+					((_TR_key in (%s)) or
+					(_Related_TR_key in (%s)))''' % \
+				(rel_type, TC_LINK, done_str, done_str))
 
-		# now, add to the old_closure
+			# now, add to the old_closure
 
-		old_closure = old_closure + old_closure_sublist
+			old_closure = old_closure + old_closure_sublist
 
 	old_tc = ArcSet.ArcSet ()	# the old transitive closure
 	for row in old_closure:
