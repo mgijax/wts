@@ -16,7 +16,7 @@ class WTS:
 	# DOES:	sets and gets values for fields of tracking records, provides
 	#	simple querying by Title
 	# Public Methods:
-	#	__init__ (self, wts_cmd)
+	#	__init__ (self, wts_cmd, environ)
 	#	addNote (self, TR, note)
 	#	addNoteFromFile (self, TR, path)
 	#	newMinimal (self, title, status)
@@ -44,7 +44,10 @@ class WTS:
 	#		sys.exit(-1)
 
 	def __init__ (self,
-		wts_cmd		# string; path to the WTS cmd line executable
+		wts_cmd,	# string; path to the WTS cmd line executable
+		environ = {}	# dictionary of environment variables to be
+				# defined when the WTS command-line is
+				# executed
 		):
 		# Purpose: constructor
 		# Returns: nothing
@@ -53,6 +56,7 @@ class WTS:
 		# Throws: 'error' if 'wts_cmd' does not exist
 
 		self.command = wts_cmd
+		self.environ = environ
 		if not os.path.exists (self.command):
 			raise error, '%s does not exist' % self.command
 		return
@@ -228,7 +232,8 @@ class WTS:
 		#	its value if the command fails
 
 		stdout, stderr, exitcode = runCommand.runCommand (
-			'%s %s' % (self.command, args)
+			'%s %s' % (self.command, args),
+			self.environ
 			)
 		if exitcode:
 			raise error, stderr
