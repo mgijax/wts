@@ -355,7 +355,7 @@ def gen_Query_Form (
 						# the name of its associated
 						# help file
 
-	HELP_URL = '../searches/help.cgi?req='	# URL to get help
+	HELP_URL = '../searches/help.cgi?req=%s'	# URL to get help
 
 	HeadingLevel = 4	# (constant) HTML heading level / size to use
 				# for section titles
