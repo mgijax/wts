@@ -3965,17 +3965,11 @@ def validate_TrackRec_Entry (
 			'These required fields exist, but have no value: ' \
 			+ no_values)
 
-	# look for unrecognized field names
+	# look for unrecognized field names and remove them from 'raw'
 
-	bad_names = None
 	for item in raw_keys:
 		if item not in all_attributes:
-                        if bad_names is not None:
-				bad_names = bad_names + ', ' + item
-                        else:
-				bad_names = item
-	if bad_names:
-		errors.append ('Unrecognized field names: ' + bad_names)
+			del raw[item]
 
 	# note the controlled vocabulary fields and tables:  (each entry is
 	# (field name, table name, 1-single value or 2-multi-valued)
@@ -4586,7 +4580,6 @@ def save_Relationships (
 
 	# if there were no changes, then just bail out.
 
-	### HERE
 	if old_values ['depends_on'].equals (values ['depends_on']):
 		return queries
 
