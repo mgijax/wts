@@ -2044,17 +2044,27 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		if not self.data.has_key ('TR Nr'):
 			self.set_Values ( { 'TR Nr' : None } )
 
+		CV = Controlled_Vocab.cv
+
+		priorityCV = CV['CV_WTS_Priority']
+		sizeCV = CV['CV_WTS_Size']
+		statusCV = CV['CV_WTS_Status']
+		typeCV = CV['CV_WTS_Type']
+		areaCV = CV['CV_WTS_Area']
+
 		self.set_Values ( { \
-			'Priority' : 'unknown', \
+			'Priority' : priorityCV.keyToName (
+					priorityCV.default_key()),
 			'Status Staff' : os.environ ['REMOTE_USER'], \
-			'Size' : 'unknown', \
-			'Status' : 'new', \
+			'Size' : sizeCV.keyToName (sizeCV.default_key()),
+			'Status' : statusCV.keyToName (
+					statusCV.default_key()),
 			'Status Date' : wtslib.current_Time(), \
 			'Title' : None, \
 			'Directory' : None, \
 			'Depends On' : Set.Set (),
-			'Type' : 'unknown',
-			'Area' : 'unknown',
+			'Type' : typeCV.keyToName (typeCV.default_key()),
+			'Area' : areaCV.keyToName (areaCV.default_key()),
 			'Project Definition' : None,
 			'Progress Notes' : None,
 			'Needs Attention By' : None,
