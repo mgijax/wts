@@ -57,6 +57,8 @@ import Controlled_Vocab
 import wtslib
 import screenlib
 
+PREFIX = Configuration.config ['PREFIX']
+
 class Container:
 	# Concept: 
 	#	IS: a big bucket into which we can dump HTMLgen objects which
@@ -145,7 +147,7 @@ def gen_Home_Page (
 
 	doc = screenlib.WTS_Document (cgi = 0,	# this document will go to a
 						# file, not a CGI response,
-		title = 'WTS 1.5: Home Page')	# with specified title.
+		title = PREFIX + ': Home Page')	# with specified title.
 
 	# section 1 - Reviewing Tracking Records
 	#	add a horizontal rule and then a centered heading
@@ -353,8 +355,7 @@ def gen_Query_Form (
 						# the name of its associated
 						# help file
 
-	HELP_URL = '../userdocs/help/'	# URL to the directory with the help
-					# files (relative from the query page)
+	HELP_URL = '../searches/help.cgi?req='	# URL to get help
 
 	HeadingLevel = 4	# (constant) HTML heading level / size to use
 				# for section titles
@@ -376,7 +377,7 @@ def gen_Query_Form (
 			name = 'Reset',
 			value = 'Reset'),
 		buttons = screenlib.Button (	# its WTS Home button
-			'WTS Home',
+			PREFIX + ' Home',
 			'window.location.href="%s"' % screenlib.WTS_HOME_PAGE)
 		)
 
@@ -398,7 +399,7 @@ def gen_Query_Form (
 
 	top_tbl.append (HTMLgen.TR (
 		HTMLgen.TD (
-			HTMLgen.Href (HELP_URL + HELP_FILES ['TR Nr'], 'TR #'),
+			HTMLgen.Href (HELP_URL % 'TR_Nr', 'TR #'),
 			HTMLgen.Text (' (TR)'), \
 			HTMLgen.Input (type = 'text',
 				name = 'TR_Nr',
@@ -410,7 +411,7 @@ def gen_Query_Form (
 
 	top_tbl.append (HTMLgen.TR (
 		HTMLgen.TD (
-			HTMLgen.Href (HELP_URL + HELP_FILES ['Title'], 'Title'),
+			HTMLgen.Href (HELP_URL % 'Title', 'Title'),
 			HTMLgen.Input (type = 'text', \
 				name = 'Title',
 				size = 40)
@@ -442,7 +443,7 @@ def gen_Query_Form (
 
 			# add link and line break
 
-			HTMLgen.Href (HELP_URL + HELP_FILES [field], field),
+			HTMLgen.Href (HELP_URL % field, field),
 			HTMLgen.Text (' ... '),
 			HTMLgen.Input (type = 'checkbox',
 				name = 'Not',
@@ -466,7 +467,7 @@ def gen_Query_Form (
 	# the Needs Attention By field with a link, a line break, and a text box
 
 	row1.append (HTMLgen.TD (
-		HTMLgen.Href (HELP_URL + HELP_FILES['Needs Attention By'],
+		HTMLgen.Href (HELP_URL % 'Needs_Attention_By',
 			'Needs Attention By'),
 		HTMLgen.BR (), 
 		HTMLgen.Input (type = 'text', name = 'Needs_Attention_By', \
@@ -481,7 +482,7 @@ def gen_Query_Form (
 
 		# link and a line break
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Priority'], 'Priority'),
+		HTMLgen.Href (HELP_URL % 'Priority', 'Priority'),
 		HTMLgen.Text (' ... '),
 		HTMLgen.Input (type = 'checkbox',
 			name = 'Not',
@@ -503,7 +504,7 @@ def gen_Query_Form (
 
 		# link and a line break
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Requested By'], 'Req By'),
+		HTMLgen.Href (HELP_URL % 'Requested_By', 'Req By'),
 		HTMLgen.BR (),
 
 		# pick list box has the 'any' option at the top of the list
@@ -519,7 +520,7 @@ def gen_Query_Form (
 
 		# link and a line break
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Status'], 'Status'),
+		HTMLgen.Href (HELP_URL % 'Status', 'Status'),
 		HTMLgen.Text (' ... '),
 		HTMLgen.Input (type = 'checkbox',
 			name = 'Not',
@@ -546,7 +547,7 @@ def gen_Query_Form (
 
 		# link and a line break
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Size'], 'Size'),
+		HTMLgen.Href (HELP_URL % 'Size', 'Size'),
 		HTMLgen.Text (' ... '),
 		HTMLgen.Input (type = 'checkbox',
 			name = 'Not',
@@ -568,8 +569,7 @@ def gen_Query_Form (
 		# link and a line break, followed by a multi-line message about
 		# how to do "Depends On" queries.
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Depends On'],
-			'Depends On'),
+		HTMLgen.Href (HELP_URL % 'Depends_On', 'Depends On'),
 		HTMLgen.BR (),
 		HTMLgen.Text ('For dependency-based queries, use the'),
 		HTMLgen.BR (),
@@ -587,7 +587,7 @@ def gen_Query_Form (
 
 		# link and a line break
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Staff'], 'Staff'),
+		HTMLgen.Href (HELP_URL % 'Staff', 'Staff'),
 		HTMLgen.BR (),
 
 		# pick list box has the 'any' option at the top of the list
@@ -604,7 +604,7 @@ def gen_Query_Form (
 
 		# link and a line break
 
-		HTMLgen.Href (HELP_URL + 'tr.for.each.html',
+		HTMLgen.Href (HELP_URL % 'ForEach',
 			'For each TR in the query result...'),
 		HTMLgen.BR (),
 
@@ -635,11 +635,10 @@ def gen_Query_Form (
 
 		HTMLgen.Bold (HTMLgen.Text ('Text Fields: ')),
 		HTMLgen.Italic (HTMLgen.Text ('('),
-			HTMLgen.Href (HELP_URL + \
-				HELP_FILES ['Project Definition'],
+			HTMLgen.Href (HELP_URL % 'Project_Definition',
 				'Project Definition'),
 			HTMLgen.Text (', '),
-			HTMLgen.Href (HELP_URL + HELP_FILES ['Progress Notes'],
+			HTMLgen.Href (HELP_URL % 'Progress_Notes',
 				'Progress Notes'),
 			HTMLgen.Text (')')
 			),
@@ -654,7 +653,7 @@ def gen_Query_Form (
 
 		# link, line break, and text box
 
-		HTMLgen.Href (HELP_URL + HELP_FILES['Modification Date'],
+		HTMLgen.Href (HELP_URL % 'Modification_Date',
 			'Modification Date'),
 		HTMLgen.BR (),
 		HTMLgen.Input (type = 'text',
@@ -834,7 +833,7 @@ def gen_Query_Form (
 	doc = screenlib.WTS_Document (
 		cgi = 0,	# produce this page for being saved to a file,
 				# rather than as a CGi reply
-		title = 'WTS: Tracking Record Query Form')
+		title = PREFIX + ': Tracking Record Query Form')
 	doc.append (frm)
 	doc.write (dir + 'tr.query.html')
 
@@ -1157,7 +1156,7 @@ def gen_Help_Screens (
 			# file (not returning as the result of CGI)
 
 			doc = screenlib.WTS_Document (
-				title = 'WTS: Help - ' + title,
+				title = PREFIX + ': Help - ' + title,
 				cgi = 0)
 
 			# add a bold version of the basic description,
@@ -1194,7 +1193,7 @@ def gen_Help_Screens (
 			# returned as a CGI response.
 
 			doc = HTMLgen.FramesetDocument ( \
-				title = 'WTS: Help - ' + title,
+				title = PREFIX + ': Help - ' + title,
 				cgi = 0)
 
 			# now, let's create a Frameset to hold our frames,
@@ -1225,8 +1224,8 @@ def gen_Help_Screens (
 			# CGI response
 
 			doc = screenlib.WTS_Document (
-				title = 'WTS: Help - %s - General Info' % \
-					title,
+				title = PREFIX + \
+					': Help - %s - General Info' % title,
 				cgi = 0)
 
 			# add a bold version of the basic description,
@@ -1302,7 +1301,7 @@ def gen_StatusGrid_Form (
 			name = 'Reset',
 			value = 'Reset'),
 		buttons = screenlib.Button (	# its WTS Home button
-			'WTS Home',
+			PREFIX + ' Home',
 			'window.location.href="%s"' % screenlib.WTS_HOME_PAGE)
 		)
 
@@ -1368,7 +1367,7 @@ def gen_StatusGrid_Form (
 # -- main program --
 
 if __name__ == '__main__':
-	options, error_flag = wtslib.parseCommandLine (sys.argv, [],
+	options, error_flag = wtslib.parseCommandLine (sys.argv, \
 				['dir=', 'home', 'query', 'help', 'grid'])
 	if error_flag != 0:
 		print USAGE	# present user with usage instructions
@@ -1377,7 +1376,7 @@ if __name__ == '__main__':
 
 			# if the directory was specified, then get it
 
-			dir = options ['dir']
+			dir = options ['dir'][0]
 			if dir [-1] <> '/':
 				dir = dir + '/'
 			del options ['dir']		# this has been handled
