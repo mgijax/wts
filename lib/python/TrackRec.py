@@ -4260,7 +4260,7 @@ def save_WTS_TrackRec (
 
 	if str (values ['directory_variable']) <> 'None':
 		re = regex.compile (
-			'[~A-Za-z: "=<>/_]*'	# skip everything before we...
+			'[~A-Za-z: "=<>\./_]*'	# skip everything before we...
 			'\([/0-9]+\)'		# get the numerical directories
 			)
 		re.match (values ['directory_variable'])
