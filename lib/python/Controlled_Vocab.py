@@ -31,7 +31,7 @@
 #	  differences hard-coded in this module.  (It needed to be different
 #	  to handle a different ordering scheme.)
 # Functions:
-#	create_Include_File (table name, full pathname, name for user)
+#	getCVtables (table name)
 #	get_Controlled_Vocabs (table names)
 #	self_test ()
 
@@ -43,7 +43,7 @@ import string
 import screenlib
 import HTMLgen
 
-## import Category -- loaded in the create_Include_File() function to ease
+## import Category -- loaded in the getCVtables() function to ease
 ##			dependencies (Category imports this module which
 ##			imports Category)
 
@@ -385,23 +385,18 @@ class Controlled_Vocab:
 
 #-MODULE FUNCTIONS-------------------------------------------------
 
-def create_Include_File (
-	table_name,	# string; name of the ctrl vocabulary table in the db
-	pathname,	# string; path of the file to create
-	name_for_user	# string; what's the page title seen by the user?
+def getCVtables (
+	table_name	# string; name of the ctrl vocabulary table in the db
 	):
-	# Purpose: create and save an HTML include file for the given table
-	#	name at the specified pathname
-	# Returns: nothing
-	# Assumes: user has write permission for "pathname"
-	# Effects: Creates an HTML file with a table of string names and their
-	#	descriptions for the given "table_name" at the given "pathname".
-	# Throws: nothing
-	# Example: To write a web page with the title "Tracking Record Sizes"
-	#	for the "CV_WTS_Size" table to the "size.html" file in the
-	#	parent directory, we would do:
-	#		create_Include_File ("CV_WTS_Size", "../size.html",
-	#			"Tracking Record Sizes")
+	# Purpose: create and return an HTML table to represent the controlled
+	#	vocabulary specified by 'table_name'
+	# Returns: string
+	# Assumes: the wtslib.sql() function can query the wts database okay
+	# Effects: queries the database
+	# Throws: propagates any exceptions raised by wtslib.sql()
+
+	columns = []	# list of strings, each is a column heading
+	results = []	# list of dictionaries, each has info for one CV term
 
 	# we need special handling for the CV_Staff table since it
 	# has a non-standard ordering and a non-standard format
@@ -454,14 +449,12 @@ def create_Include_File (
 		columns = [ 'Value', 'Description' ]
 		results = wtslib.sql (qry)		# do the query
 	
-	# now write the results out to the specified file
+	# build a table of active terms followed by a table of retired terms
 
-	doc = HTMLgen.SeriesDocument (screenlib.RESOURCE_FILE, \
-		cgi = 0, title = 'WTS: Help - ' + name_for_user + \
-		' - Definitions')
+	cvTbl = HTMLgen.TableLite (border=0)
+	cvRow = HTMLgen.TR(valign="top")
 
-	# write a table of active terms followed by a table of retired terms
-
+	table_str = ''
 	for (is_active, table_title) in \
 			[ (1, 'Current Terms'), (0, 'Retired Terms') ]:
 
@@ -481,11 +474,13 @@ def create_Include_File (
 					data_row.append(HTMLgen.TD (row[col]))
 				tbl.append (data_row)
 		if empty == 0:
-			doc.append (HTMLgen.Bold (table_title))
-			doc.append (tbl)
-			doc.append (HTMLgen.P())
-
-	doc.write (pathname)
+			cvRow.append (HTMLgen.TD (HTMLgen.BR(),
+					HTMLgen.Italic (table_title),
+					HTMLgen.P(),
+					tbl))
+			cvRow.append (HTMLgen.TD (width=10))
+	cvTbl.append (cvRow)
+	return str(cvTbl)
 
 
 def get_Controlled_Vocabs (
