@@ -419,7 +419,8 @@ def create_Include_File (
 	elif table_name == 'CV_WTS_Category':
 		import Category
 
-		columns = [ 'Value', 'Description', 'E-Mail', 'Staff' ]
+		columns = [ 'Value', 'Description', 'E-Mail', 'Staff',
+				'Area', 'Type' ]
 		qry = '''select category_name Value, category_description
 				Description, active
 			from CV_WTS_Category
@@ -433,10 +434,11 @@ def create_Include_File (
 			cat = Category.Category (row ['Value'])
 			row ['E-Mail'] = cat.getEmail ()
 			row ['Staff'] = cat.getStaff ()
-			if row ['E-Mail'] == '':
-				row ['E-Mail'] = 'None'		# cell filler
-			if row ['Staff'] == '':
-				row ['Staff'] = 'None'		# cell filler
+			row ['Area'] = cat.getArea ()
+			row ['Type'] = cat.getType ()
+			for field in [ 'E-Mail', 'Staff', 'Area', 'Type']:
+				if row [field] == '':
+					row [field] = 'None'	# cell filler
 	else:
 		# the field prefix (for all except the key field) is
 		# a lowercase version of whatever is after the
