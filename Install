@@ -117,12 +117,11 @@ done
 # generate user documentation
 
 cd admin
-echo "Generating HTML pages and command line alias..."
+echo "Generating HTML pages..."
 ./wts.screens.py --dir ../www --home
 ./wts.screens.py --dir ../www/searches --query
 ./wts.screens.py --dir ../www/searches --grid
 ./wts.screens.py --dir ../www/userdocs/help --help
-refreshLink wts.py wts
 cd $TOP
 
 # if this system has the needed binaries, genereate pdf versions of
