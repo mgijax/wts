@@ -48,18 +48,18 @@
 
 USAGE = \
 '''
-	wts.py has several command line formats:
-		wts.py --batchInput <filename>
-		wts.py --dir <tr #>
-		wts.py --display <tr #>
-		wts.py --edit <tr #>
-		wts.py --fixTC <tr #>
-		wts.py --locks
-		wts.py --new
-		wts.py --plainTree <tr #>
-		wts.py --routing
-		wts.py --tree <tr #>
-		wts.py --unlock <tr #>
+	wts has several command line formats:
+		wts --batchInput <filename>
+		wts --dir <tr #>
+		wts --display <tr #>
+		wts --edit <tr #>
+		wts --fixTC <tr #>
+		wts --locks
+		wts --new
+		wts --plainTree <tr #>
+		wts --routing
+		wts --tree <tr #>
+		wts --unlock <tr #>
 '''
 
 import os
