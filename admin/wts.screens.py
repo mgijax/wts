@@ -1289,7 +1289,7 @@ def gen_StatusGrid_Form (
 	# build the form with its buttons
 
 	frm = screenlib.WTS_Form (
-		'searches/tr.status.grid.cgi', 	# CGI to call on submission
+		'tr.status.grid.cgi',	 	# CGI to call on submission
 		method = 'GET',			# use a GET submission because
 						# we have only two fields.
 		name = 'StatusGridForm',	# name of the form
@@ -1321,35 +1321,35 @@ def gen_StatusGrid_Form (
 	frm.append ('''This form allows you go generate a Status Grid based on
 		your chosen range of dates and type of analysis
 		(by ''',
-		HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Area'], 'Area'),
+	HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'], 'Area'),
 		' or by ',
-		HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Type'], 'Type'),
+	HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Type'], 'Type'),
 		').')
 	frm.append (HTMLgen.P())
 	frm.append ('The grid will:', HTMLgen.UL ( [
 		Container ('show a column for each ',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Status'],
+		HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Status'],
 			'Status')),
 		Container ('show a row for each ',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Area'],
+		HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'],
 				'Area'),
 			' or ',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Type'],
+			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Type'],
 				'Type'),
 			', whichever is selected'),
 		Container ('examine TRs which had a ',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Status'],
+		HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Status'],
 				'Status'),
 			' change in that date range'),
 		Container ('display in each cell the number of tracking ',
 			'records which finished that date range with the ',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Status'],
+			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Status'],
 				'Status'),
 			' corresponding to that column, and which has the ',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Area'],
+			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'],
 				'Area'),
 			'/',
-			HTMLgen.Href ('userdocs/help/' + HELP_FILES ['Type'],
+			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Type'],
 				'Type'),
 			' of that row')
 		] ))
