@@ -101,13 +101,18 @@ def tablePage (table):
 	list.append (' a new record.')
 	return string.join (header + list + footer, '\n')
 
+def noneTrapped (s):
+	if s is None:
+		return ''
+	return s
+
 def field (name, value, readonly = 0):
 	newname = '<DT><B>%s</B>' % name
 	if readonly:
 		value = '<DD>%s' % value
 	else:
 		value = '<DD><TEXTAREA ROWS=5 COLS=70 NAME="%s">%s</TEXTAREA>' \
-			% (name, value)
+			% (name, noneTrapped(value))
 	return newname + value
 
 def entryPage (table, key):
@@ -189,7 +194,9 @@ def savedEntry (parms):
 			table, string.join(tkeys, ', '), '%s')
 		t = []
 		for tk in tkeys:
-			if isInt(row[tk]):
+			if not parms.has_key (toSpace(tk)):
+				t.append ('null')
+			elif isInt(row[tk]):
 				t.append (parms[toSpace(tk)])
 			else:
 				t.append ('"%s"' % \
@@ -203,8 +210,13 @@ def savedEntry (parms):
 		for tk in tkeys:
 			if tk == keyname:
 				continue
-			value = parms[toSpace(tk)]
-			if isInt(row[tk]):
+			if parms.has_key (toSpace(tk)):
+				value = parms[toSpace(tk)]
+			else:
+				value = None
+			if value is None:
+				t.append ('%s = null' % tk)
+			elif isInt(row[tk]):
 				t.append ('%s = %s' % (tk, value))
 			else:
 				t.append ('%s = "%s"' % (tk, \
