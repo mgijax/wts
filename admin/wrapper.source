@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# this script simply changes to the wts/admin directory, executes the wts
+# command line with whatever parameters we received, and then changes back
+# to the previous directory when done.  This workaround was needed as a result
+# of directory restructuring with WTS 1.5.
+
+CURDIR=`pwd`		# remember the current directory so we can come back
+
+# get the path to this file and 'cd' there, so we can find wts.py later
+
+MYPATH=`dirname $0`
+cd $MYPATH
+
+# We need to ensure that any command-line parameters are enclosed in quotes,
+# so that multi-word parameters are handled correctly.  (eg- "Progress Notes")
+
+s=""				# build the command-line options in 's'
+while [ $# -gt 0 ];
+do
+	s=$s' "'$1'"'
+	shift
+done
+
+./wts.py $s		# execute the actual Python WTS command line and
+EXITCODE=$?		# remember its exit code so we can propagate it later
+
+cd $CURDIR		# bounce back to our starting directory
+exit $EXITCODE		# and propagate the wts.py exit code
