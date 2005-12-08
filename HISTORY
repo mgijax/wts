@@ -1,3 +1,10 @@
+TAG: wts-tr7193-BP
+DATE: 12/08/2005
+STAFF: jsb
+RELEASE: branch point
+CHANGES:
+1) branch point for python upgrade (TR7193)
+
 TAG: wts-1-0-0
 DATE: 05/25/2000
 STAFF: jsb
