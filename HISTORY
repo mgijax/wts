@@ -1,3 +1,11 @@
+TAG: wts-tr7193-1
+DATE: 12/12/2005
+STAFF: jsb
+RELEASE: alpha
+CHANGES:
+1) minor tweaks needed to make things work with Python 2.4.2
+2) added wts.cfg.defaults file for default (production) config options
+
 TAG: wts-tr7193-BP
 DATE: 12/08/2005
 STAFF: jsb
