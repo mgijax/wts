@@ -5,9 +5,11 @@
 #		modification of htpasswd-compatible group files.  (from
 #		within Python rather than shelling out to the OS)
 
+# Notes: This module no longer appears to be used anywhere in WTS.  In a
+#	future release, we should consider removing it.  -- jsb, 12/9/05
+
 import os
 import regex
-import rand
 import crypt
 import time
 import string

@@ -39,6 +39,7 @@
 '''
 
 import os
+import Configuration
 import regex
 import regsub
 import getopt
@@ -48,7 +49,6 @@ import time
 import traceback
 import sys
 import types
-import Configuration
 import db
 
 TRUE = 1

@@ -37,8 +37,8 @@
 
 import os
 import copy
-import wtslib
 import Configuration
+import wtslib
 import string
 import screenlib
 import HTMLgen

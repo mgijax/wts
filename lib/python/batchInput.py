@@ -5,9 +5,9 @@ import os
 import sys
 import types
 import string
+import Configuration
 import regex
 import regsub
-import Configuration
 import TabFile
 import Set
 import TrackRec
