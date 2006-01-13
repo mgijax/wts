@@ -38,6 +38,11 @@ TOP=`pwd`
 
 CONFIGURATION=wts.cfg
 
+if [ ! -r ${CONFIGURATION} ]; then
+	echo "ERROR: Please create ${CONFIGURATION} from ${CONFIGURATION}.defaults"
+	exit 1
+fi
+
 # read variables from the config file
 
 exec 4<&0
@@ -169,5 +174,3 @@ cd admin
 echo "Generating security file"
 ./gen_htaccess.py
 cd $TOP
-
-echo "Do not forget to adjust www/data/wts.rc as needed if this is MASS-T"

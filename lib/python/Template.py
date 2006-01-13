@@ -16,11 +16,12 @@ if '.' not in sys.path:
 	sys.path.insert (0, '.')
 import os
 
+import Configuration	# WTS libraries
+import wtslib
+
 import string		# standard Python libraries
 import regsub
 
-import Configuration	# WTS libraries
-import wtslib
 
 # list of substitutions to be made to the value of each template -- each list
 # element is a tuple containing the regex to find and the string with which

@@ -7,7 +7,7 @@
 
 import os
 import regex
-import rand
+import random
 import crypt
 import time
 import WriteLock
@@ -278,8 +278,8 @@ class HTPassword:
 		# store it in "cpw".  Then set "cpw", the encrypted password,
 		# as the password for "username".
 
-		rand.srand (int (time.time ()))
-		cpw = crypt.crypt (password, to64 (rand.rand (), 2))
+		random.seed (int (time.time ()))
+		cpw = crypt.crypt (password, to64 (random.randint (0,500), 2))
 		self.users [username] = cpw
 		return TRUE
 

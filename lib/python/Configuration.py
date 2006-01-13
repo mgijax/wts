@@ -51,9 +51,18 @@
 #	  filled in.
 
 import os
+import sys
+
+# attempt to turn off any deprecation errors (for regex, regsub, etc.); if we
+# fail, then just go on and let them be reported.
+try:
+	sys.path.insert (0, '/usr/local/mgi/live/lib/python/')
+	import ignoreDeprecation 
+except:
+	pass
+
 import regex
 import string
-import sys
 # import db	(imported below, in the refresh() method)
 
 #--GLOBAL VARIABLE (treat as a constant)---------------------------------
@@ -238,6 +247,10 @@ class Configuration:
 		for dir in dirs:
 			if dir not in sys.path:
 				sys.path.insert (0, dir)
+
+		if self.configuration.has_key ('LD_LIBRARY_PATH'):
+			os.environ['LD_LIBRARY_PATH'] = \
+				self.configuration['LD_LIBRARY_PATH']
 
 		# get the database module
 

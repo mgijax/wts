@@ -3,13 +3,13 @@
 # Name: WriteLock.py
 # Purpose: provides the WriteLock class, which provides a means to lock a file
 #	the file system and write out a new copy
-# On Import: seeds the random number generator in the "rand" module with the
+# On Import: seeds the random number generator in the "random" module with the
 #	current time
 # Assumes: all writes to the specified file go through this module
 
 import os
 import time
-import rand
+import random
 import fcntl
 import FCNTL
 
@@ -20,7 +20,7 @@ NONBLOCKING_WRITE = FCNTL.F_WRLCK | FCNTL.O_NDELAY	# constant indicating
 TRUE = 1				# define constants for booleans for
 FALSE = 0				# readability
 
-rand.srand (int (time.time ()))		# seed random number generator
+random.seed (int (time.time ()))		# seed random number generator
 
 class WriteLock:
 	# Concept:
@@ -94,12 +94,7 @@ class WriteLock:
 				self.fp = temp_fp
 				return TRUE
 			except IOError:
-				# The % operation will return a number in the
-				# range 0..(time_left - 1).  Since we need a
-				# range of 1..time_left to avoid an infinite
-				# loop, add 1 ms.
-
-				to_wait = (rand.rand () % time_left) + 1
+				to_wait = random.randint (1, time_left)
 				time.sleep (to_wait / 1000.0)
 				time_left = time_left - to_wait
 		temp_fp.close ()

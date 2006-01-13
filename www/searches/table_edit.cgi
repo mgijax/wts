@@ -10,10 +10,10 @@
 import os
 import sys
 import cgi
-import regsub
 import string
 
 import Configuration
+import regsub
 import wtslib
 import screenlib
 

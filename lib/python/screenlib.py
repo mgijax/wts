@@ -73,10 +73,10 @@
 
 import os
 import sys
+import Configuration
 import regsub
 import traceback
 import types
-import Configuration
 import HTMLgen
 import string
 import wtslib
@@ -1456,7 +1456,8 @@ class Status_Grid_Screen (WTS_Document):
 		frm = WTS_Form (buttons = btns)
 		frm.append (HTMLgen.Center ('Date Range: %s' % \
 			date_range, HTMLgen.P()))
-		frm.append (tbl, HTMLgen.P ())
+		frm.append (tbl)
+		frm.append (HTMLgen.P ())
 		self.append (frm)
 		return
 

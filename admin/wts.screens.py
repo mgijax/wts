@@ -782,7 +782,7 @@ def gen_Query_Form (
 			# so add it to the sort_fields:
 
 			if item[0] != 'Directory':
-				sort_fields.append (item [1], item [0])
+				sort_fields.append ( (item [1], item [0]) )
 
 	# now, let's go through our three levels of sorting and add a row to
 	# the sorting table for each...
@@ -1313,7 +1313,8 @@ def gen_StatusGrid_Form (
 	frm.append ('Look for Status changes in the date range: ')
 	frm.append (HTMLgen.Input (type = 'text', name = 'DateRange',
 		value = '', size = 25))
-	frm.append (HTMLgen.P(), HTMLgen.HR ())
+	frm.append (HTMLgen.P())
+	frm.append (HTMLgen.HR ())
 
 	# add instructions
 
