@@ -11,9 +11,9 @@ import os
 import time
 import random
 import fcntl
-import FCNTL
+#import FCNTL
 
-NONBLOCKING_WRITE = FCNTL.F_WRLCK | FCNTL.O_NDELAY	# constant indicating
+NONBLOCKING_WRITE = fcntl.F_WRLCK | os.O_NDELAY	# constant indicating
 							# a non-blocking write
 							# operation
 
