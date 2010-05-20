@@ -1,5 +1,5 @@
 # Database server:
-DB_SERVER	PROD_MGI
+DB_SERVER	PROD1_MGI
 
 # Database:
 DB_DATABASE	wts
@@ -41,5 +41,5 @@ LD_LIBRARY_PATH	/opt/teleuseXRT/lib:/opt/teleuseXRT/conf/lib:/opt/sybase/12.5/AS
 
 USERNAME	wts
 PASSWORD	password
-HOST_NAME	shire.informatics.jax.org
-projectDirectoryServer shire 
+HOST_NAME	lindon.informatics.jax.org
+projectDirectoryServer lindon 
