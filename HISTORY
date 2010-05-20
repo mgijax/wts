@@ -1,3 +1,10 @@
+TAG: wts-4-3-4-1
+DATE: 05/20/2010
+STAFF: dbm
+RELEASE: shire retirement
+CHANGES:
+1) wts.cfg.defaults: changed PROD_MGI to PROD1_MGI and shire to lindon
+
 TAG: wts-3-4-2-0
 DATE: 01/13/2006
 STAFF: jsb
