@@ -50,6 +50,7 @@ import traceback
 import sys
 import types
 import db
+import smtplib
 
 TRUE = 1
 FALSE = 0
@@ -752,17 +753,29 @@ def send_Mail (
 	# Effects: see Purpose.
 	# Throws: nothing
 
-	global SENDMAIL
+	send_from = '%s@informatics.jax.org' % send_from
+	send_to = '%s@informatics.jax.org' % send_to
 
-	p = os.popen ("%s -t" % SENDMAIL, "w")
-	p.write ("From: %s\n" % send_from)
-	p.write ("To: %s\n" % send_to)
-	p.write ("Subject: %s\n" % subject)
-	p.write ("\n")
-	p.write ("%s" % message)
+#	global SENDMAIL
+#	p = os.popen ("%s -t" % SENDMAIL, "w")
+#	p.write ("From: %s\n" % send_from)
+#	p.write ("To: %s\n" % send_to)
+#	p.write ("Subject: %s\n" % subject)
+#	p.write ("\n")
+#	p.write ("%s" % message)
+#	return p.close ()
 
-	return p.close ()
+	msg = '''From: %s
+To: %s
+Subject: %s
 
+%s
+''' % (send_from, send_to, subject, message)
+
+	server = smtplib.SMTP('smtp.jax.org')
+	server.sendmail(send_from, send_to, msg)
+	server.quit()
+	return
 
 def dbValueString (x):
 	''' returns a string which represents x as it should go into a sql
