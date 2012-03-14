@@ -753,6 +753,15 @@ def send_Mail (
 	# Effects: see Purpose.
 	# Throws: nothing
 
+	if not (send_to and send_from):
+		return
+
+	if str(send_to) == 'None':
+		return
+
+	if str(send_from) == 'None':
+		return
+
 	send_from = '%s@informatics.jax.org' % send_from
 	send_to = '%s@informatics.jax.org' % send_to
 
