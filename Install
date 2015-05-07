@@ -130,6 +130,9 @@ cd $TOP
 
 # generate user documentation
 
+LD_LIBRARY_PATH=`grep LD_LIBRARY_PATH wts.cfg | awk '{print $2}'`
+export LD_LIBRARY_PATH
+
 cd admin
 echo "Generating HTML pages..."
 ./wts.screens.py --dir ../www --home
