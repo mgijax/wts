@@ -38,7 +38,9 @@ EXE_NAME	wts
 # Value of _Template_key to use as an initial Project Definition
 PROJ_DEF_KEY	1
 
-LD_LIBRARY_PATH	/usr/local/postgres/lib/
+# choose postgres on solaris boxes, pgsql on linux boxes
+LD_LIBRARY_PATH	/usr/local/pgsql/lib/
+#LD_LIBRARY_PATH	/usr/local/postgres/lib/
 
 # remaining items are for POP e-mail access:
 
