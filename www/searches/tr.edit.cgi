@@ -56,6 +56,9 @@ try:
 	tr = TrackRec.TrackRec (tr_num)		# load the tracking record with
 						# the specified number.
 
+	if dict.has_key('unlock'):
+		tr.unlock()
+
 	# Now try to lock that tracking record.  If an exception is raised,
 	# then we know that it has already been locked.  The string returned
 	# with the exception (the exc_value) specifies who locked it and when.
@@ -67,11 +70,9 @@ try:
 		doc.write ()				# write it out
 
 	except TrackRec.alreadyLocked:
-		screenlib.gen_Message_Screen (
+		screenlib.gen_Unlock_Screen (
 			Configuration.config['PREFIX'] + \
 			': Cannot Lock Tracking Record',
-			'''The tracking record (TR #%d) is being edited and 
-			was %s.  Please press Ok to go back to the
-			Detail screen.''' % (tr_num, sys.exc_value))
+			tr_num, sys.exc_value, 1)
 except:
 	screenlib.gen_Exception_Screen ('tr.edit.cgi')
