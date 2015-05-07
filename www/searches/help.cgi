@@ -33,12 +33,12 @@ def getPage (
 
 	results = wtslib.sql ('''select *
 				from WTS_Help
-				where fieldname = "%s"''' % req)
+				where fieldname = '%s' ''' % req)
 
 	fieldname = results[0]['fieldname']
 	description = results[0]['description']
-	toQuery = results[0]['toQuery']
-	cvName = results[0]['cvName']
+	toQuery = results[0]['toquery']
+	cvName = results[0]['cvname']
 
 	page.setup (fieldname, description, toQuery, cvName)
 	return page
