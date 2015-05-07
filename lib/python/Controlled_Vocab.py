@@ -14,8 +14,8 @@
 #		Controlled_Vocab.cv ['CV_WTS_Size']['Small']
 # Assumptions:
 #	* REMOTE_USER environment variable identifies the current user
-#	* Configuration has been imported
-#	* Configuration.config is a dictionary which has keys for the
+#	* ConfigurationWrapper has been imported
+#	* ConfigurationWrapper.config has keys for the
 #	  controlled vocabulary table names which reference integer default
 #	  key values (or if not a dictionary, has a __getitem__ method which
 #	  provides this functionality)
@@ -37,7 +37,7 @@
 
 import os
 import copy
-import Configuration
+import ConfigurationWrapper
 import wtslib
 import string
 import screenlib
@@ -119,7 +119,7 @@ class Controlled_Vocab:
 			# get the table's default key from the system
 			# configuration
 
-			self.def_key = Configuration.config [table_name]
+			self.def_key = ConfigurationWrapper.config[table_name]
 
 			# the field prefix is whatever is after the 'CV_WTS_'
 			# in the table name, but with the first letter in
@@ -441,12 +441,13 @@ def getCVtables (
 
 		field_prefix = string.lower (table_name[7]) + \
 			table_name[8:]
-		qry = '''select %s_name Value, %s_description Description,
+		qry = '''select %s_name as value,
+				%s_description as description,
 				active
 			from %s
 			order by %s_order''' % (field_prefix, field_prefix,
 				table_name, field_prefix)
-		columns = [ 'Value', 'Description' ]
+		columns = [ 'value', 'description' ]
 		results = wtslib.sql (qry)		# do the query
 	
 	# build a table of active terms followed by a table of retired terms

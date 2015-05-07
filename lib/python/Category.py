@@ -124,18 +124,18 @@ class Category:
 		self.email = cat_info [0]['category_email']
 		self.description = cat_info [0]['category_description']
 		self.area = Controlled_Vocab.cv ['CV_WTS_Area'].keyToName (
-			cat_info [0]['_Area_key'] )
+			cat_info [0]['_area_key'] )
 		self.type = Controlled_Vocab.cv ['CV_WTS_Type'].keyToName (
-			cat_info [0]['_Type_key'] )
+			cat_info [0]['_type_key'] )
 		self.status = Controlled_Vocab.cv ['CV_WTS_Status'].keyToName (
-			cat_info [0]['_Status_key'] )
+			cat_info [0]['_status_key'] )
 
 		# There can be any number of staff members assigned to this
 		# Category.  Just collect them in a Set.
 
 		self.staff = Set.Set ()
 		for row in staff_info:
-			self.staff.add (row ['_Staff_key'])
+			self.staff.add (row ['_staff_key'])
 		return
 
 
