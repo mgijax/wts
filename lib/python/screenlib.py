@@ -42,8 +42,6 @@
 #		setup (errors, opt. abort cgi name, opt. back count, opt. TR#)
 #	Exception_Screen 
 #		setup (exception type, exception value, traceback table)
-#	GoBack_Screen
-#		setup (back count)
 #	GoTo_Screen
 #		setup (url to load)
 #	Message_Screen
@@ -67,7 +65,6 @@
 #
 # Wrapper Functions:
 #	gen_Exception_Screen (filename)
-#	gen_GoBack_Screen (back count)
 #	gen_Message_Screen (page title, message, back count)
 '''
 
@@ -704,44 +701,6 @@ class Exception_Screen (WTS_Document):
 ### End of Class: Exception_Screen ###
 
 
-class GoBack_Screen (WTS_Document):
-	''' provides a method for producing an screen which immediately goes
-	#	back in the browser's history list
-	#
-	# Requires:	inherits from WTS_Document
-	# Effects:	see above
-	# Modifies:	self
-	'''
-	def setup (self,
-		back_count = 1			# integer identifying how many
-						# history entries to go back.
-		):
-		'''
-		#
-		# Requires:	back_count - integer indentifying how many
-		#			history entries to go back.
-		# Effects:	generates screen-specific info for a go-back
-		#		screen and puts it in self.  The WTS_Document
-		#		should be initialized with goBack = 'go_back()'
-		# Modifies:	self
-		'''
-		# if the user gave us a negative back count, then just make
-		# it positive
-
-		if back_count < 0:
-			back_count = -back_count
-
-		# append the JavaScript code to the document
-
-		self.append (HTMLgen.Script (code = '''
-			function go_back () {
-				window.history.go (-%d) }''' % back_count))
-		self.append ("Reloading...  Please wait...")
-		return
-
-### End of Class: GoBack_Screen ###
-
-
 class GoTo_Screen (WTS_Document):
 	# Concept:
 	#	IS: a screen which simply replaces itself immediately with
@@ -769,7 +728,9 @@ class GoTo_Screen (WTS_Document):
 
 		self.append (HTMLgen.Script (code = '''
 			function go_to () {
-				window.location.replace ("%s") }''' % url))
+				window.location.replace ("%s");
+				}
+			window.onload = go_to();''' % url))
 
 		return
 
@@ -818,6 +779,67 @@ class Message_Screen (WTS_Document):
 		# define the the button on the form, and add the form to self
 
 		frm.append (Button ('Ok', 'go_back ()'))
+
+		self.append (frm)
+
+class Unlock_Screen (WTS_Document):
+	''' provides a method for producing a screen which gives a message 
+	# about unlocking a locked TR.
+	#
+	# Requires:	inherits from WTS_Document
+	# Effects:	see above
+	# Modifies:	self
+	'''
+	def setup (self, tr_nr = '', back_count = 1, exc_value = ''):
+		'''
+		#
+		# Requires:	message - string containing the message,
+		#		back_count - integer number of screens for the
+		#			ok button to go back.
+		# Effects:	generates screen-specific info for a simple
+		#		message-notification screen and puts it in self
+		# Modifies:	self
+		'''
+		# if the user gave us a negative back count, then just make
+		# it positive
+
+		if back_count < 0:
+			back_count = -back_count
+
+		message = '''The tracking record (TR #%d) is being edited and
+                        was %s.  Please press Back to go back to the Detail
+			screen.
+                        Or if have have communicated with the other user and
+                        learned that he/she is no longer editing the TR, you
+                        may unlock it by clicking the Unlock button.''' % (
+				tr_nr, exc_value)
+
+		# add the initial explanatory message
+
+		self.append (HTMLgen.Text (message))
+
+		# append the JavaScript code (to go back) to the document
+
+		self.append (HTMLgen.Script (code = \
+			'function go_back () { window.history.go (-' + \
+			str (back_count) + ') }'))
+
+		self.append (HTMLgen.Script (code = \
+			'''function unlock() {
+				window.location.replace(
+					"tr.edit.cgi?TrackRec=%s&unlock=1");
+			}''' % tr_nr))
+
+		# we need to add an Ok button which references the above
+		# JavaScript.  To be displayed, this button must appear on
+		# a form.
+
+		frm = WTS_Form (name = 'BackForm')
+
+		# define the the button on the form, and add the form to self
+
+		frm.append (Button ('Back', 'go_back ()'))
+		frm.append (Button ('Unlock', 'unlock()'))
 
 		self.append (frm)
 
@@ -1523,29 +1545,11 @@ def gen_Exception_Screen (filename):
 	del doc
 
 
-def gen_GoBack_Screen (back_count = 1):
-	''' outputs an HTML screen which immediately goes back in the
-	#	browser's history list the given number (back_count) of times.
-	#	(serves as a wrapper for the GoBack_Screen class, since it may
-	#	be used many times)
-	#
-	# Requires:	back_count - optional integer specifying the number
-	#			of screens to go back in the history list.
-	#			The default is: 1
-	# Effects:	generates an HTML document which uses JavaScript to
-	#		go back in the history list the specified number of
-	#		times.  Sends this document to stdout (in a CGI
-	#		response format).
-	# Modifies:	no side effects
-	'''
-	doc = GoBack_Screen (onLoad = 'go_back()')
-	doc.setup (back_count)
-
-	# now send the document and delete it
-
-	doc.write ()
+def gen_GoTo_Screen (url):
+	doc = GoTo_Screen()
+	doc.setup(url)
+	doc.write()
 	del doc
-
 
 def gen_Message_Screen (page_title, message, back_count = 1):
 	''' outputs an HTML screen which presents the given title and message,
@@ -1570,4 +1574,11 @@ def gen_Message_Screen (page_title, message, back_count = 1):
 	# now send the page to stdout and delete it
 
 	doc.write ()
+	del doc
+
+def gen_Unlock_Screen (page_title, tr_nr, exc_value, back_count = 1):
+	doc = Unlock_Screen (title = page_title)
+	doc.setup (tr_nr, back_count, exc_value)
+
+	doc.write()
 	del doc
