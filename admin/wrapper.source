@@ -22,6 +22,9 @@ do
 	shift
 done
 
+LD_LIBRARY_PATH=`grep LD_LIBRARY_PATH ../wts.cfg | awk '{print $2}'`
+export LD_LIBRARY_PATH
+
 ./wts.py $s		# execute the actual Python WTS command line and
 EXITCODE=$?		# remember its exit code so we can propagate it later
 
