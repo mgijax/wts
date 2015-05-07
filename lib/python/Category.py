@@ -349,7 +349,7 @@ class Category:
 			# update the e-mail field
 
 			'''update CV_WTS_Category
-			set category_email = "%s"
+			set category_email = '%s'
 			where _Category_key = %d''' % (self.email, self.key),
 
 			# then delete the old staff members
