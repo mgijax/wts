@@ -5,9 +5,9 @@
 #	not available.
 
 import Configuration
-import wtslib
 
 error = 'ConfigurationWrapper.error'
+imported = False
 
 class ConfigurationWrapper:
 	def __init__ (self):
@@ -17,6 +17,8 @@ class ConfigurationWrapper:
 		return
 
 	def __getitem__ (self, key):
+		global imported
+
 		if self.config.has_key(key):
 			return self.config[key]
 
@@ -27,6 +29,8 @@ class ConfigurationWrapper:
 			from %s.wts_config
 			where _Config_name = '%s' ''' % (
 				self.config['DB_SCHEMA'], key)
+
+		import wtslib
 
 		value = None
 		results = wtslib.sql(cmd)
