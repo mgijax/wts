@@ -24,9 +24,9 @@
 #	current_Time ()
 #	list_To_String (list of items, string separator)
 #	string_To_List (string of comma-space separated items, string separator)
-#	duplicated_DoubleQuotes (string to have internal " changed to "")
-#	sql (queries, parsers = 'auto')
-#	record_SQL_Errors (queries, parsers,	* internal use only
+#	duplicated_Quotes (string to have internal ' changed to '')
+#	sql (queries)
+#	record_SQL_Errors (queries, 		* internal use only
 #		exc_type, exc_value, exc_traceback)
 #	send_Mail (send_from, send_to, subject,	message)
 #       dbValueString (value to format for inclusion in a sql query)
@@ -39,18 +39,17 @@
 '''
 
 import os
-import Configuration
+import ConfigurationWrapper
 import regex
 import regsub
 import getopt
 import string
-import tempfile
 import time
 import traceback
 import sys
 import types
-import db
 import smtplib
+import dbManager
 
 TRUE = 1
 FALSE = 0
@@ -71,6 +70,12 @@ sqlError = 'wtslib.sqlError'		# global exception value, distinct
 
 SENDMAIL = '/usr/lib/sendmail'		# path to the standard sendmail program
 
+config = ConfigurationWrapper.config
+
+db = dbManager.postgresManager(config['DB_SERVER'], config['DB_DATABASE'],
+	config['DB_USER'], config['DB_PASSWORD'])
+db.execute("set schema '%s'" % config['DB_SCHEMA'])
+db.setReturnAsSybase(True)
 
 #---DATE AND TIME FUNCTIONALITY------------------------------------------
 
@@ -629,53 +634,70 @@ def string_To_List (
 		return []
 
 
-def duplicated_DoubleQuotes (s):
-	''' returns string s, but with any internal double quotes doubled.
+def duplicated_Quotes (s):
+	''' returns string s, but with any internal quotes doubled.
 	#
 	# Requires:	s - a string
-	# Effects:	returns a copy of s, but with any double quotes (")
-	#		in the string being doubled ("")
+	# Effects:	returns a copy of s, but with any quotes (')
+	#		in the string being doubled ('')
 	# Modifies:	no side effects
 	'''
-	return regsub.gsub ('"', '""', s)
+	return regsub.gsub ("'", "''", s)
 
 
-def sql (queries, parsers = 'auto'):
+def sql (queries):
 	''' wrapper for db.sql which catches errors & writes diagnostics
 	#
 	# Assumes:	db has been initialized
 	# Requires:	queries - a string or list of strings, each of which is
 	#			a SQL query.  (as appropriate for db.sql)
-	#		parsers - optional list of parser functions, as 
-	#			appropriate for db.sql.  is set to 'auto'
-	#			by default, since this is the most used mode
-	#			throughout wts.
-	# Effects:	passes queries and parsers on to db.sql (see its
+	# Effects:	passes queries on to dbManager.execute (see its
 	#		documentation).  If no exceptions were raised, just
 	#		return the value from db.sql.  If an exception did
 	#		occur, catch it, write out some diagnostic information,
 	#		then raise a sqlError exception with a value that
 	#		identifies the diagnostic file.
-	# Modifies:	depends on queries and parsers
+	# Modifies:	depends on queries
 	'''
+	if type(queries) == types.ListType:
+		out = []
+		for q in queries:
+			out.append(sql(q))
+		return out
+
 	try:
-		return db.sql (queries, parsers)
+		results = db.execute (queries)
+		db.commit()
+		if results:
+			# if we had results, convert them to be Python
+			# dictionaries so we can add/delete key/value pairs
+			# as needed 
+
+			if results[0] == None:
+				return results
+
+			keys = results[0].keys()
+			out = []
+			for row in results:
+				d = {}
+				for key in keys:
+					d[key] = row[key]
+				out.append(d)
+			results = out
+		return results
 	except:
 		global sqlError
-		filename = record_SQL_Errors (queries, parsers, sys.exc_type, \
+		filename = record_SQL_Errors (queries, sys.exc_type, \
 			sys.exc_value, sys.exc_traceback)
 		raise sqlError, 'Error occured in executing query.  ' + \
 			'Diagnostics are in ' + filename
 
 
-def record_SQL_Errors (queries, parsers, exc_type, exc_value, exc_traceback):
+def record_SQL_Errors (queries, exc_type, exc_value, exc_traceback):
 	''' creates a new file and writes diagnostic info to it, returns name
 	#
 	# Requires:	queries - string or list of strings, each of which is
 	#			one SQL query
-	#		parsers - string 'auto' or list containing possibly
-	#			both strings ('auto') and function pointers,
-	#			denoting the parsers for the queries. 
 	#		exc_type - type of exception which occurred
 	#		exc_value - value of the exception which occurred
 	#		exc_traceback - the traceback stack when the exception
@@ -694,9 +716,8 @@ def record_SQL_Errors (queries, parsers, exc_type, exc_value, exc_traceback):
 	# directory.  That directory is specified as part of the system
 	# configuration.
 
-	tempfile.tempdir = Configuration.config ['DIAG_DIR']
-	tempfile.template = "wts.sql."
-	filename = tempfile.mktemp ()		# get a unique filename
+	filename = os.path.join(ConfigurationWrapper.config['DIAG_DIR'],
+		'wts.sql.error')
 
 	fp = open (filename, 'w')
 
@@ -720,22 +741,6 @@ def record_SQL_Errors (queries, parsers, exc_type, exc_value, exc_traceback):
 			fp.write (q + '\n\n')
 	else:
 		fp.write (queries + '\n\n')
-
-	fp.write ('\n--------\nParsers:\n--------\n')
-	if type (parsers) == types.ListType:
-
-		# if the type is a list, then we have a list containing 
-		# possibly both strings and function pointers.  With each item,
-		# if it is a string we can print it; otherwise use the __name__
-		# attribute to print the function's name:
-
-		for p in parsers:
-			if type (p) == types.StringType:
-				fp.write (p + '\n\n')
-			else:
-				fp.write (p.__name__ + '\n\n')
-	else:
-		fp.write (parsers + '\n\n')
 
 	fp.close ()
 	return filename
@@ -799,7 +804,7 @@ def dbValueString (x):
 	if x == None:
 		return 'Null'
 	elif type (x) == type (''):
-		return '"' + duplicated_DoubleQuotes (x) + '"'
+		return '"' + duplicated_Quotes (x) + '"'
 	else:
 		return str (x)
 
