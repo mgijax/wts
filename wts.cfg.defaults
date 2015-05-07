@@ -1,24 +1,27 @@
 # Database server:
-DB_SERVER	PROD1_MGI
+DB_SERVER	mgi-testdb3
 
 # Database:
-DB_DATABASE	wts
+DB_DATABASE	export
+
+# Database schema
+DB_SCHEMA	wts
 
 # Database user:
-DB_USER		wts_rw
+DB_USER		mgd_dbo
 
 # Database pasword:
 DB_PASSWORD	password
 
 # Directory to which to write diagnostics:
-DIAG_DIR	/usr/local/mgi/wts/logs
+DIAG_DIR	/usr/local/mgi/live/wts/logs
 
 # Path to the release notes for the current release (usually in a project dir)
 RELNOTES	/mgi/all/wts_projects/3700/3789/releaseNotes.txt
 
 # Colon-delimited list of directories in which to find python libraries 
 # (db, etc.)  NOTE: include the library directory for this product!
-LIBDIRS /usr/local/mgi/wts/lib/python:/usr/local/mgi/live/lib/python/:/opt/sybase/12.5/OCS-12_5/lib/
+LIBDIRS /usr/local/mgi/live/wts/lib/python:/usr/local/mgi/live/lib/python/:/usr/local/postgres/lib/
 
 # Path to the python executable:
 PYTHON		/usr/local/bin/python
@@ -27,7 +30,7 @@ PYTHON		/usr/local/bin/python
 DATADIR		/mgi/all/wts_projects/
 
 # Page title prefix
-PREFIX		WTS1.7
+PREFIX		WTS1.8
 
 # Name of the command-line executable to generate
 EXE_NAME	wts
@@ -35,7 +38,7 @@ EXE_NAME	wts
 # Value of _Template_key to use as an initial Project Definition
 PROJ_DEF_KEY	1
 
-LD_LIBRARY_PATH	/opt/teleuseXRT/lib:/opt/teleuseXRT/conf/lib:/opt/sybase/12.5/ASE-12_5/lib:/opt/sybase/12.5/OCS-12_5/lib:/usr/openwin/lib:/usr/lib:/usr/ucblib:/usr/local/lib
+LD_LIBRARY_PATH	/usr/local/postgres/lib/
 
 # remaining items are for POP e-mail access:
 
