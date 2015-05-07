@@ -54,7 +54,7 @@ import types
 import string
 import HTMLgen
 import Controlled_Vocab
-import Configuration
+import ConfigurationWrapper
 import WTS_DB_Object
 import wtslib
 import copy
@@ -70,6 +70,8 @@ import Template
 
 
 #-GLOBALS-------------------------------------------------------------------
+
+Configuration = ConfigurationWrapper
 
 TRUE = 1
 FALSE = 0
@@ -254,6 +256,7 @@ NAME_TO_DB = {  'TR Nr' :               '_TR_key',
                 'Modification Date' :   'modification_date' }
 
 DB_TO_NAME = {  '_TR_key' :                     'TR Nr',
+		'_tr_key' : 			'TR Nr',
                 'priority_name' :               'Priority',
                 'size_name' :                   'Size',
                 'status_name' :                 'Status',
@@ -470,8 +473,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 				'''select value
 				from WTS_Template
 				where _Template_key = %s''' % \
-					Configuration.config['PROJ_DEF_KEY'],
-					'auto')
+					Configuration.config['PROJ_DEF_KEY'])
 			definition_default = results[0]['value']
 
 			self.set_Values ( { 'Project Definition' :
@@ -861,7 +863,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 			# retrieve all info from database:
 
-			[descendants, ancestors] = wtslib.sql ([q1, q2], 'auto')
+			[descendants, ancestors] = wtslib.sql ([q1, q2])
 
 			# now, build the tables for each set of dependency info:
 
@@ -890,15 +892,15 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					# don't bother to include this TR in
 					# the lists about its dependencies:
 
-					if str(row ['_TR_key']) == self.num():
+					if str(row ['_tr_key']) == self.num():
 						continue
 					tbl.append (HTMLgen.TR (
 						HTMLgen.TD (HTMLgen.Href (
-							cgi % row ['_TR_key'],
-							row ['_TR_key'])),
+							cgi % row ['_tr_key'],
+							row ['_tr_key'])),
 						HTMLgen.TD (row ['tr_title']),
 						HTMLgen.TD (status (row
-							['_Status_key']))))
+							['_status_key']))))
 
 				single_row.append (HTMLgen.TD (tbl,
 					valign="top"))
@@ -1494,29 +1496,33 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
                 global alreadyLocked
 
-		qry = '''select convert (varchar, locked_when, 100) locked_when,
+		qry = '''select %s as locked_when,
 				_Locked_Staff_key
 			from WTS_TrackRec
-			where (_TR_key = %s)''' % self.data['TR Nr']
+			where (_TR_key = %s)''' % (convertDate('locked_when'),
+				self.data['TR Nr'])
 		result = wtslib.sql (qry)
 
 		# if it is already locked, then give up.
 
-		if (result[0]['_Locked_Staff_key'] <> None):
+		if (result[0]['_locked_staff_key'] <> None):
 			CV = Controlled_Vocab.cv ['CV_Staff'].key_dict ()
                         raise alreadyLocked, 'locked by %s on %s' % \
-				(str (CV [result[0]['_Locked_Staff_key']]),
+				(str (CV [result[0]['_locked_staff_key']]),
 				result[0]['locked_when'])
 
 		# otherwise, lock it.
 
+		userKey = Controlled_Vocab.cv['CV_Staff'][os.environ['REMOTE_USER']]
+
+		if not userKey:
+			raise error, 'Current user (%s) is not in CV_Staff table' % os.environ['REMOTE_USER']
+
 		qry = '''update WTS_TrackRec
-			set locked_when = getdate(),
-				_Locked_Staff_key = s._Staff_key
-			from WTS_TrackRec t, CV_Staff s
-			where ((s.staff_username="%s") and
-				(t._TR_key = %s))''' % \
-				(os.environ['REMOTE_USER'], self.num ())
+			set locked_when = now(),
+				_Locked_Staff_key = %s
+			where _TR_key = %s''' % \
+				(userKey, self.num())
 		result = wtslib.sql (qry)
 
 
@@ -1588,13 +1594,10 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
                         select tr._TR_key, pri.priority_name,
                                 size.size_name, stat.status_name,
                                 staff1.staff_username status_staff_username,
-                                convert (varchar, tr.attention_by, 100)
-                                attention_by,
-                                convert (varchar, tr.status_set_date, 100)
-                                status_set_date, tr.tr_title,
+                                %s as attention_by,
+                                %s as status_set_date, tr.tr_title,
                                 tr.directory_variable,
-                                convert (varchar, tr.modification_date, 100)
-				modification_date
+                                %s as modification_date
 			from WTS_TrackRec tr, CV_WTS_Priority pri,
                                 CV_WTS_Size size, CV_WTS_Status stat,
                                 CV_Staff staff1
@@ -1602,7 +1605,11 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
                                 (tr._Size_key = size._Size_key) and 
                                 (tr._Status_key = stat._Status_key) and
                                 (tr._Status_Staff_key = staff1._Staff_key) and
-                                (tr._TR_key = %s))''' % my_num,
+                                (tr._TR_key = %s))''' % (
+					convertDate('tr.attention_by'),
+					convertDate('tr.status_set_date'),
+					convertDate('tr.modification_date'),
+					my_num),
 
                         # 1. the text blocks:  Progress Notes and Project
 			#    Definition
@@ -1615,13 +1622,14 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			'''
                         select sh._TR_key, stat.status_name,
                                 staff.staff_username,
-                                convert (varchar, sh.set_date, 100) set_date_txt
+                                %s as set_date_txt
 			from WTS_Status_History sh, CV_WTS_Status stat,
                                CV_Staff staff
                         where ((sh._Staff_key = staff._Staff_key) and
                                  (sh._Status_key = stat._Status_key) and
                                  (sh._TR_key = %s))
-			order by sh.set_date desc''' % my_num,
+			order by sh.set_date desc''' % (
+				convertDate('sh.set_date'), my_num),
 
                         # 3. dependencies of this tracking record
 			'''
@@ -1633,7 +1641,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
                         # 4. areas of this tracking record
 			'''
-                        select _TR_key, area_name area
+                        select _TR_key, area_name as area
                         from WTS_Area MMarea, CV_WTS_Area CVarea
                         where ((MMarea._Area_key = CVarea._Area_key)
                                 and (MMarea._TR_key = %s))
@@ -1641,7 +1649,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			
                         # 5. types of this tracking record
 			'''
-                        select _TR_key, type_name type
+                        select _TR_key, type_name as type
                         from WTS_Type MMtype, CV_WTS_Type CVtype
                         where ((MMtype._Type_key = CVtype._Type_key) and
                                 (MMtype._TR_key = %s))
@@ -1649,7 +1657,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			
                         # 6. staff members assigned to this tracking record
                         '''
-                        select _TR_key, staff_username staff_list
+                        select _TR_key, staff_username as staff_list
                         from WTS_Staff_Assignment MMstaff, CV_Staff CVstaff
                         where ((MMstaff._Staff_key = CVstaff._Staff_key) and
                                 (MMstaff._TR_key = %s))
@@ -1658,7 +1666,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			
                         # 7. staff members who requested this tracking record
                         '''
-                        select _TR_key, staff_username requested_by
+                        select _TR_key, staff_username as requested_by
                         from WTS_Requested_By MMreqby, CV_Staff CVstaff
                         where ((MMreqby._Staff_key = CVstaff._Staff_key) and
 	                        (MMreqby._TR_key = %s))
@@ -1697,7 +1705,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		# (This is where the ValueError may be raised, if we didn't
 		# find the tracking record.)
 
-		[ record ] = parse_And_Merge (results [0], '_TR_key')
+		[ record ] = parse_And_Merge (results [0], '_tr_key')
 
 		# convert the dates to the standard WTS format.  Since these
 		# values are coming from the database, we know this is a valid
@@ -1729,22 +1737,6 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			PROJECT_DEFINITION)
 		record ['progress_notes'] = getText (my_num, PROGRESS_NOTES)
 
-# OLD:
-#	The above lines use the getText() function to read TEXT fields larger
-#	than 32k correctly.  To avoid changing too much code at this point,
-#	I've left the previous query intact.  In the future, we should cut the
-#	query from the list of them above, and adjust the code that parses the
-#	results from the queries which follow it.
-#
-#		record ['project_definition'] = ''
-#		record ['progress_notes'] = ''
-#		for row in results [1]:
-#			if row ['text_type'] == PROJECT_DEFINITION:
-#				record ['project_definition'] = \
-#					row ['text_block']
-#			elif row ['text_type'] == PROGRESS_NOTES:
-#				record ['progress_notes'] = row ['text_block']
-#
                 # now, get the status history info from query 2, starting with
 		# the current status...
 
@@ -1771,18 +1763,18 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		record ['depends_on'] = Set.Set ()
 		for row in results [3]:
-			record ['depends_on'].add (row ['_Related_TR_key'])
+			record ['depends_on'].add (row ['_related_tr_key'])
 
                 # go through the rest of the queries (4-7) and tack on any
 		# information
 
 		extra_queries = range (4, len (results))
 		for i in extra_queries:
-			temp = parse_And_Merge (results [i], '_TR_key')
+			temp = parse_And_Merge (results [i], '_tr_key')
 			if len (temp) > 0:
 				key_list = temp[0].keys ()
 				for k in key_list:
-					if k <> '_TR_key':
+					if k <> '_tr_key':
 						record [k] = temp [0][k]
 
 		# now, put the values returned in the proper places in self
@@ -1926,10 +1918,10 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 				status_key = CV ['CV_WTS_Status'] \
 					[ backup ['status_name'] ]
 				queries.append ( \
-					'''insert WTS_Status_History (_TR_key,
+					'''insert into WTS_Status_History (_TR_key,
 						_Status_key, set_date,
 						_Staff_key)
-					values (%d, %d, "%s", %d)''' % \
+					values (%d, %d, '%s', %d)''' % \
 					(backup ['_TR_key'], status_key,
 					backup ['status_set_date'], staff_key)
 					)
@@ -2175,12 +2167,12 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		# get the current locking information from the database
 
-		qry = '''select convert (varchar, tr.locked_when, 100)
-				locked_when, cv.staff_username staff_username
+		qry = '''select %s as locked_when,
+				cv.staff_username staff_username
 			from	WTS_TrackRec tr, CV_Staff cv
 			where	(tr._TR_key = %s) and
-				(tr._Locked_Staff_key = cv._Staff_key)''' % \
-			self.num ()
+				(tr._Locked_Staff_key = cv._Staff_key)''' % (
+				convertDate('tr.locked_when'), self.num() )
 		result = wtslib.sql (qry)
 
 		# if it not locked, then raise the notLocked exception
@@ -2345,7 +2337,7 @@ def build_And_Run_SQL (
 
 	keys_to_display = []
 	for item in to_display:
-		keys_to_display.append ( NAME_TO_DB [item] )
+		keys_to_display.append ( NAME_TO_DB [item].lower() )
 
 	# now, go through field-by-field and handle each individually.
 
@@ -2478,7 +2470,7 @@ def build_And_Run_SQL (
 		# text fields.
 
 		joins.append ('tr._TR_key = tx._TR_key')
-		where.append ('tx.text_block like "%s%s%s"' % \
+		where.append ("tx.text_block ilike '%s%s%s'" % \
 			("%", clean_dict ['Text Fields'], "%"))
 
 	# at this point, we have enough information to generate and run the
@@ -2493,13 +2485,13 @@ def build_And_Run_SQL (
 	# we're going to be working a lot with a temporary table in the
 	# database.  Let's build and remember its name in temp_table:
 
-	temp_table = '#TMP_Query_%s' % os.environ ['REMOTE_USER']
+	temp_table = 'TMP_Query_%s' % os.environ ['REMOTE_USER']
 
 	# now, build the initial query which selects all the fields we have
 	# noted so far (select) from the various tables we have noted (frm),
 	# and puts that information in the specified temp_table
 
-	qry = 'select %s into %s from %s' % \
+	qry = 'select %s into temporary table %s from %s' % \
 		(wtslib.list_To_String (select), temp_table,
 		wtslib.list_To_String (frm))
 
@@ -2644,7 +2636,10 @@ def build_And_Run_SQL (
 	# _TR_key field as its key in track_recs.
 
 	for row in results [ main_query_position ]:
-		track_recs [ row [ '_TR_key' ] ] = row
+		if row.has_key('_tr_key'):
+			track_recs [ row [ '_tr_key' ] ] = row
+		else:
+			track_recs [ row [ '_tr_key' ] ] = row
 
 	tr_numbers = track_recs.keys ()		# get all tracking record
 						# numbers returned in query
@@ -2772,7 +2767,7 @@ def consider_TR_Nr (
 
 	for i in [0, 1, 2]:
 		if sorting [i] == 'TR Nr':
-			order [i] = '_TR_key ' + ordering [i]
+			order [i] = '_tr_key ' + ordering [i]
 	return
 
 def consider_simpleText (
@@ -2818,7 +2813,7 @@ def consider_simpleText (
 	# in the associated field for the specified string.
 
 	if name in clean_keys:
-		where.append ('%s like "%s%s%s"' % \
+		where.append ("%s ilike '%s%s%s'" % \
 			(fieldname, "%", clean_dict [name], "%"))
 
 	# there are up to three levels of sorting.  Go through each, and see if
@@ -2831,6 +2826,13 @@ def consider_simpleText (
 			order [i] = fieldname [3:] + ' ' + ordering [i]
 	return
 
+
+def convertDate (fieldname):
+	# returns a string which can be inserted into the 'select' portion of
+	# a query to convert the value for the named datetime field to be a 
+	# string when it comes out of the database
+
+	return "to_char(%s, 'MM/DD/YYYY HH:MI')" % fieldname
 
 def consider_date (
 	name,		# name of the date field (in object attribute (user-
@@ -2875,8 +2877,8 @@ def consider_date (
 	# use the same fieldname (though without the leading table abbreviation)
 
 	if name in to_display:
-		select.append ('convert (varchar, %s, 100) %s' % \
-			(fieldname, fieldname [3:]))
+		select.append ('%s as %s' % \
+			(convertDate(fieldname), fieldname[3:]))
 
 	# now, if this date field was specified in the dictionary of inputs
 	# from the user, then we know we need to add clauses to where for it.
@@ -2894,9 +2896,9 @@ def consider_date (
 		# value is after the start date and before the stop date
 
 		if start <> '':
-			where.append ('%s >= "%s"' % (fieldname, start))
+			where.append ("%s >= '%s'" % (fieldname, start))
 		if stop <> '':
-			where.append ('%s <= "%s"' % (fieldname, stop))
+			where.append ("%s <= '%s'" % (fieldname, stop))
 
 	# there are up to three levels of sorting.  Go through each, and see if
 	# it is based on the specified object attribute.  If so, set the
@@ -3150,7 +3152,7 @@ def consider_dependencies (
 		# now move all those entries from temp_table_1 to temp_table,
 		# and drop temp_table_1
 
-		dependency_queries.append ('insert %s select * from %s' % \
+		dependency_queries.append ('insert into %s select * from %s' % \
 			(temp_table, temp_table_1))
 		dependency_queries.append ('drop table %s' % temp_table_1)
 
@@ -3187,7 +3189,7 @@ def consider_dependencies (
 		# move the entries from temp_table_2 to the main temp_table,
 		# and drop temp_table_2
 
-		dependency_queries.append ('insert %s select * from %s' % \
+		dependency_queries.append ('insert into %s select * from %s' % \
 			(temp_table, temp_table_2))
 		dependency_queries.append ('drop table %s' % temp_table_2)
 
@@ -3277,13 +3279,13 @@ def compile_multi_valued_cv (
 					# already loaded in the
 					# Controlled_Vocab module
 	cv_info = {
-		'Area' : ('_Area_key', CV ['CV_WTS_Area'].key_dict (),
+		'Area' : ('_area_key', CV ['CV_WTS_Area'].key_dict (),
 			'area_name', 'area_order'),
-		'Type' : ('_Type_key', CV ['CV_WTS_Type'].key_dict (),
+		'Type' : ('_type_key', CV ['CV_WTS_Type'].key_dict (),
 			'type_name', 'type_order'),
-		'Staff' : ('_Staff_key', CV ['CV_Staff'].key_dict (),
+		'Staff' : ('_staff_key', CV ['CV_Staff'].key_dict (),
 			'staff_username', 'staff_username'),
-		'Requested By' : ('_Staff_key', CV ['CV_Staff'].key_dict (),
+		'Requested By' : ('_staff_key', CV ['CV_Staff'].key_dict (),
 			'staff_username', 'staff_username')
 		}
 
@@ -3307,20 +3309,25 @@ def compile_multi_valued_cv (
 		# controlled vocabulary field, and step through each row
 		# (dictionary) contained therein.
 
+		trKey = '_tr_key'
+
+		if not cv_info.has_key(key):
+			key = key.lower()
+
 		for row in results [queried_cv [key]]:
 
 			# if we have already begun a list for this field...
 
-                        if track_recs [row ['_TR_key']].has_key (db_key):
+                        if track_recs [row [trKey]].has_key (db_key):
 
 				# then just append the new value to it
 
-				track_recs [row ['_TR_key']][db_key].append ( \
+				track_recs [row [trKey]][db_key].append ( \
 					cv_info[key][1][row [cv_info [key][0]]])
                         else:
 				# begin a new list of values for this field
 
-				track_recs [row ['_TR_key']][db_key] = [ \
+				track_recs [row [trKey]][db_key] = [ \
 					cv_info [key][1][row [cv_info \
 					[key][0]]] ]
 
@@ -3371,11 +3378,11 @@ def compile_single_valued_cv (
 	#			name, name of key field)
 
 	cv = [	('size_name', CV ['CV_WTS_Size'].key_dict (),
-			'_Size_key'),
+			'_size_key'),
 		('status_name', CV ['CV_WTS_Status'].key_dict (),
-			'_Status_key'), \
+			'_status_key'), \
 		('priority_name', CV ['CV_WTS_Priority'].key_dict (),
-			'_Priority_key') ]
+			'_priority_key') ]
 
 	# step through all the tracking records...
 
@@ -3639,6 +3646,8 @@ def parse_And_Merge (
 	#	[ { '_TR_key' : 2, 'area_name' : 'web, unknown' },
 	#	  { '_TR_key' : 3, 'area_name' : 'unknown' } ]
 
+#	raise error, 'Key name: %s, Keys: %s' % (key_name, results[0].keys())
+
 	# work with a dictionary of dictionaries.  key -> row (conceptual
 	# record, which is itself a dictionary of fieldname -> value)
 
@@ -3648,6 +3657,9 @@ def parse_And_Merge (
 
 	key_list = []			# ordered list of unique keys
 	for row in results:
+		if not row.has_key(key_name):
+			key_name = key_name.lower()
+
 		key = row [key_name]
 
 		# get an alias to the unified record for this row's key
@@ -3903,7 +3915,7 @@ def validate_Query_Form (
 	for field in [ 'Title', 'Text Fields' ]:
 		if raw.has_key (field) and \
 				(type(raw[field]) == types.StringType):
-			raw[field] = wtslib.duplicated_DoubleQuotes (raw[field])
+			raw[field] = wtslib.duplicated_Quotes (raw[field])
 
 	# now, either bail out by raising an exception (if there were errors),
 	# or return the cleaned up dictionary of values (in raw)
@@ -4131,7 +4143,7 @@ def validate_TrackRec_Entry (
 			for row in cycles:
 				errors.append ('Depends On: cannot have a ' + \
 					'dependency on TR %d' % \
-					row ['_TR_key'] + \
+					row ['_tr_key'] + \
 					' as it would create a cycle.')
 
 	# Clean up the large text fields.  If they are non-empty and do not
@@ -4272,7 +4284,7 @@ def save_WTS_TrackRec (
 		# We have a new tracking record, so do an insert query.  use
 		# the in-memory controlled vocab info to save unnecessary joins.
 
-		qry = '''insert WTS_TrackRec (_TR_key, _Priority_key, _Size_key,
+		qry = '''insert into WTS_TrackRec (_TR_key, _Priority_key, _Size_key,
 			_Status_key, _Status_Staff_key, status_set_date,
 			tr_title, modification_date, creation_date,
 			attention_by, directory_variable) values (''' + \
@@ -4285,8 +4297,8 @@ def save_WTS_TrackRec (
 			', ' + \
 			str (CV ['CV_Staff'][values['status_staff_username']]) \
 			+ ', "' + values ['status_set_date'] + '", "' + \
-			wtslib.duplicated_DoubleQuotes (values ['tr_title']) \
-			+ '", getdate(), getdate(), '
+			wtslib.duplicated_Quotes (values ['tr_title']) \
+			+ '", now(), now(), '
 
 		if str (values ['attention_by']) not in ('None',''):
 			qry = qry + '"' + values ['attention_by'] + '", '
@@ -4310,19 +4322,19 @@ def save_WTS_TrackRec (
 			str (CV ['CV_WTS_Status'][values ['status_name']]) + \
 			', _Status_Staff_key = ' + \
 			str (CV ['CV_Staff'][values['status_staff_username']]) \
-			+ ', status_set_date = "' + values['status_set_date'] \
-			+ '", tr_title = "' + wtslib.duplicated_DoubleQuotes ( \
+			+ ", status_set_date = '" + values['status_set_date'] \
+			+ "', tr_title = '" + wtslib.duplicated_Quotes ( \
 			values['tr_title']) + \
-			'", modification_date = getdate()'
+			"', modification_date = now()"
 
 		# directory_variable is write-once, read-many.  If we don't have
 		# a value specified, then don't bother with it.
 
 		if proj_dir is not None:
-			qry = qry + (', directory_variable = "%s"' % proj_dir)
+			qry = qry + (", directory_variable = '%s'" % proj_dir)
 
 		if str (values ['attention_by']) not in ('None',''):
-			qry = qry + (', attention_by = "%s"' % \
+			qry = qry + (", attention_by = '%s'" % \
 					values ['attention_by'])
 		else:
 			qry = qry + ', attention_by = null'
@@ -4393,7 +4405,7 @@ def save_Standard_M2M (
 			for key in tmp_data:
 				val = CV [item[2]][key]
 				if val:
-					queries.append ('insert ' + item [1] + \
+					queries.append ('insert into ' + item [1] + \
 						' (_TR_key, ' + item [3] + \
 						') values (' + \
 					str (values ['_TR_key']) + ', ' + \
@@ -4454,7 +4466,7 @@ def save_Standard_M2M (
 
 			for key in tmp_val:
 				if key and (key not in tmp_old):
-					queries.append ('insert ' + item[1] + \
+					queries.append ('insert into ' + item[1] + \
 						' (_TR_key, ' + item[3] + \
 						') values (' + \
 						str (values ['_TR_key']) + \
@@ -4511,9 +4523,9 @@ def save_Text_Fields (
 	if method == TR_NEW:
 		for item in text_fields:
 			if not blank (values [item[0]]):
-				queries.append ('''insert WTS_Text (text_block,
+				queries.append ('''insert into WTS_Text (text_block,
 					_TR_key, text_type) values ("''' + \
-					wtslib.duplicated_DoubleQuotes ( \
+					wtslib.duplicated_Quotes ( \
 					values [item [0]]) + '", ' + \
 					str (values ['_TR_key']) + ', ' + \
 					str (item [1]) + ')'
@@ -4541,12 +4553,12 @@ def save_Text_Fields (
 			elif new_blank and not old_blank:
 				queries.append ('''delete from WTS_Text where
 					((_TR_key = ''' + str (values \
-					['_TR_key']) + ') and (text_type = ' + \
+					['_tr_key']) + ') and (text_type = ' + \
 					str (item [1]) + '))')
 			elif old_blank and not new_blank:
-				queries.append ('''insert WTS_Text (text_block,
+				queries.append ('''insert into WTS_Text (text_block,
 					_TR_key, text_type) values ("''' + \
-					wtslib.duplicated_DoubleQuotes ( \
+					wtslib.duplicated_Quotes ( \
 					values [item [0]]) + '", ' + \
 					str (values ['_TR_key']) + ', ' + \
 					str (item [1]) + ')'
@@ -4557,11 +4569,11 @@ def save_Text_Fields (
 			# to use an update query.
 
 			elif (old_values [item[0]] <> values [item[0]]):
-				queries.append ('''update WTS_Text set
-					text_block = "''' + \
-					wtslib.duplicated_DoubleQuotes ( \
+				queries.append ("""update WTS_Text set
+					text_block = '""" + \
+					wtslib.duplicated_Quotes ( \
 					values[item[0]]) + \
-					'" where ((_TR_key = ' + \
+					"' where ((_TR_key = " + \
 					str (values ['_TR_key']) + \
 					') and (text_type = ' + \
 					str (item [1]) + '))'
@@ -4617,7 +4629,7 @@ def save_Relationships (
 		# the relevant records into WTS_Relationship
 
 		for item in tmp_val.values ():
-			queries.append ('''insert WTS_Relationship (_TR_key,
+			queries.append ('''insert into WTS_Relationship (_TR_key,
 				_Related_TR_key, relationship_type,
 				transitive_closure) values (%s, %s, %d, 0)''' \
 				% (str (values['_TR_key']), str (item),
@@ -4655,7 +4667,7 @@ def save_Relationships (
 		to_be_added.remove (values ['_TR_key'])
 		for key in to_be_added.values ():
 			queries.append ('''
-				insert WTS_Relationship (_TR_key,
+				insert into WTS_Relationship (_TR_key,
 					_Related_TR_key, relationship_type,
 					transitive_closure)
 				values (%s, %s, %d, 0)''' % \
@@ -4880,16 +4892,18 @@ def lockedTrackRecList ():
 
 	results = wtslib.sql ('''
 		select tr._TR_key, st.staff_username,
-			convert (varchar (30), tr.tr_title) tr_title,
-			convert (varchar, tr.locked_when, 100) locked_when
+			left(tr.tr_title, 30) as tr_title,
+			%s as locked_when
 		from WTS_TrackRec tr, CV_Staff st
 		where (tr._Locked_Staff_key = st._Staff_key) and
-			(tr.locked_when != null)
-		order by tr._TR_key asc''')
+			(tr.locked_when is not null)
+		order by tr._TR_key asc''' % (
+			convertDate('tr.locked_when')
+			))
 	list = []
 	for row in results:
 		datetime, error = wtslib.parse_DateTime (row ['locked_when'])
-		list.append ( (row ['_TR_key'], row ['staff_username'],
+		list.append ( (row ['_tr_key'], row ['staff_username'],
 				datetime, row ['tr_title']) )
 	return list
 		
@@ -4907,11 +4921,11 @@ def queryTitle (
 	results = wtslib.sql ('''
 		select _TR_key
 		from WTS_TrackRec
-		where tr_title like "%s%s%s"
+		where tr_title ilike '%s%s%s'
 		order by _TR_key''' % ('%', title, '%'))
 	trs = []
 	for row in results:
-		trs.append (str(row['_TR_key']))
+		trs.append (str(row['_tr_key']))
 	return string.join (trs, ',')
 
 def directoryOf (
@@ -5097,7 +5111,7 @@ def rebuild_htaccess (
 
 		title = regsub.gsub ('"', "'", rec ['tr_title'])
 		fp.write ('AddDescription "%s" /%s\n' % \
-			(title, str (rec ['_TR_key'])))
+			(title, str (rec ['_tr_key'])))
 	fp.close ()
 	os.chmod (htaccess, 0666)				# rw-rw-rw-
 	return
@@ -5193,8 +5207,8 @@ def updateTransitiveClosure (
 		# that we can look for their relatives on the next pass.
 
 		for arc in arcs:
-			start = arc ['_TR_key']
-			stop = arc ['_Related_TR_key']
+			start = arc ['_tr_key']
+			stop = arc ['_related_tr_key']
 			connected_component.addArc (Arc.Arc (start, stop))
 			if not done.contains (start):
 				to_do.add (start)
@@ -5233,8 +5247,8 @@ def updateTransitiveClosure (
 
 	old_tc = ArcSet.ArcSet ()	# the old transitive closure
 	for row in old_closure:
-		old_tc.addArc (Arc.Arc (row ['_TR_key'],
-			row ['_Related_TR_key']))
+		old_tc.addArc (Arc.Arc (row ['_tr_key'],
+			row ['_related_tr_key']))
 
 	# now, pass the connected_component on to the Digraph module which will
 	# compute the new transitive closure and whether the digraph has a
@@ -5276,7 +5290,7 @@ def updateTransitiveClosure (
 
 	for arc in to_add.getArcs ():
 		sql_statements.append ('''
-			insert WTS_Relationship (_TR_key, _Related_TR_key,
+			insert into WTS_Relationship (_TR_key, _Related_TR_key,
 				relationship_type, transitive_closure)
 			values (%d, %d, %d, %d)''' % \
 				(arc.getFromNode (), arc.getToNode (),
@@ -5328,7 +5342,7 @@ def getChildrenOf (
 	results = wtslib.sql (ChildQuery % (tr_num, DEPENDS_ON))
 	kids = []
 	for row in results:
-		kids.append (row ['_Related_TR_key'])
+		kids.append (row ['_related_tr_key'])
 	return kids
 
 def subTreeOf (
@@ -5431,7 +5445,7 @@ def graphTree (
 	results = wtslib.sql ('select _TR_key, tr_title from WTS_TrackRec')
 	titles = {}
 	for row in results:
-		titles [ row ['_TR_key'] ] = row ['tr_title']
+		titles [ row ['_tr_key'] ] = row ['tr_title']
 	return graphSubTree (tree, titles, '', showTitle)
 
 
@@ -5495,13 +5509,13 @@ def getSqlForTempStatusTable (
 	q4 = '''select tr._TR_key, tr.status_set_date, tr._Status_key
 		into %s
 		from %s km, WTS_TrackRec tr
-		where (km.tr_TR_key = tr._TR_key) and (km.res_TR_key != null)
+		where (km.tr_TR_key = tr._TR_key) and (km.res_TR_key is not null)
 			and %s''' % (tbl_updates, tbl_keymap, tr_dates)
 
 	q5 = '''select tr._TR_key, tr.status_set_date, tr._Status_key
 		into %s
 		from %s km, WTS_TrackRec tr
-		where (km.tr_TR_key = tr._TR_key) and (km.res_TR_key = null)
+		where (km.tr_TR_key = tr._TR_key) and (km.res_TR_key is null)
 			and %s''' % (tbl_inserts, tbl_keymap, tr_dates)
 
 	q6 = '''update %s
@@ -5576,7 +5590,7 @@ def getStatusTable (
 
 	TR_info = {}
 	for rec in results [-3]:
-		key = rec ['_TR_key']
+		key = rec ['_tr_key']
 		TR_info [key] = (rec ['_Status_key'], rec ['status_set_date'])
 
 	# extract CV info from the second query above, and build:
@@ -5588,10 +5602,10 @@ def getStatusTable (
 		cv_key = row ['_%s_key' % row_type]
 		if not cv_info.has_key (cv_key):
 			cv_info [cv_key] = {}
-		status_key = TR_info [row['_TR_key']][0]
+		status_key = TR_info [row['_tr_key']][0]
 		if not cv_info [cv_key].has_key (status_key):
 			cv_info [cv_key][status_key] = Set.Set ()
-		cv_info [cv_key][status_key].add (row ['_TR_key'])
+		cv_info [cv_key][status_key].add (row ['_tr_key'])
 
 	# build:
 	#	cv_info [cv_key]['total'] = count of all TRs with that cv key
@@ -5777,32 +5791,15 @@ def getText (
 
 	# determine the full length of the text field for the given 'TR'
 
-	results = wtslib.sql ('''select full = datalength(text_block)
-		from WTS_Text
+	results = wtslib.sql('''select text_block
+		from wts_text
 		where _TR_key = %s
 			and text_type = %s''' % (TR, noteType))
+
 	if not results:
 		return ''	# the given 'TR' does not have that 'noteType'
 
-	full = results[0]['full']
-
-	# now retrieve the value of the field, little by little
-
-	soFar = ''
-	while len(soFar) < full:
-		nextGroup = min (32768, full - len(soFar))
-		results = wtslib.sql ( [
-			'set textsize 32768',
-			'declare @ptr varbinary(16)',
-			'''select @ptr = textptr(text_block)
-				from WTS_Text
-				where _TR_key = %s
-					and text_type = %s''' % (TR, noteType),
-			'readtext WTS_Text.text_block @ptr %s %s' % \
-				(len(soFar), nextGroup),
-			] )
-		soFar = soFar + results[2][0]['text_block']
-	return soFar
+	return results[0]['text_block']
 
 #These define the acceptable WTS markup.  Note the 4 \s.
 WTS_MARKUP_TR = '\\\\TR('
