@@ -70,7 +70,7 @@ sqlError = 'wtslib.sqlError'		# global exception value, distinct
 
 SENDMAIL = '/usr/lib/sendmail'		# path to the standard sendmail program
 
-config = ConfigurationWrapper.config
+config = ConfigurationWrapper.ConfigurationWrapper()
 
 db = dbManager.postgresManager(config['DB_SERVER'], config['DB_DATABASE'],
 	config['DB_USER'], config['DB_PASSWORD'])
@@ -716,8 +716,7 @@ def record_SQL_Errors (queries, exc_type, exc_value, exc_traceback):
 	# directory.  That directory is specified as part of the system
 	# configuration.
 
-	filename = os.path.join(ConfigurationWrapper.config['DIAG_DIR'],
-		'wts.sql.error')
+	filename = os.path.join(config['DIAG_DIR'], 'wts.sql.error')
 
 	fp = open (filename, 'w')
 

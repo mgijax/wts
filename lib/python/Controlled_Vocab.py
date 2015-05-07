@@ -43,6 +43,8 @@ import string
 import screenlib
 import HTMLgen
 
+config = ConfigurationWrapper.ConfigurationWrapper()
+
 ## import Category -- loaded in the getCVtables() function to ease
 ##			dependencies (Category imports this module which
 ##			imports Category)
@@ -119,7 +121,7 @@ class Controlled_Vocab:
 			# get the table's default key from the system
 			# configuration
 
-			self.def_key = ConfigurationWrapper.config[table_name]
+			self.def_key = config[table_name]
 
 			# the field prefix is whatever is after the 'CV_WTS_'
 			# in the table name, but with the first letter in
