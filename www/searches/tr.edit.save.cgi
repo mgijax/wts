@@ -121,7 +121,7 @@ try:
 			title = Configuration.config['PREFIX'] + \
 				': Errors occurred in Edit Tracking Record')
 		doc.setup (error_list,
-			abort_cgi = '../cgi/tr.bailout.cgi',
+			abort_cgi = 'tr.bailout.cgi',
 			tr_num = dict ['TR Nr'],
 			back_count = 3 )
 		doc.write ()		# write out the error notice screen
@@ -199,7 +199,7 @@ try:
 				# no new routing.  just go from new screen to
 				# edit screen to detail screen = back twice
 
-				screenlib.gen_GoBack_Screen (2)
+				screenlib.gen_GoTo_Screen ('tr.detail.cgi?TR_Nr=%s' % tr_num)
 			else:
 				# we forwarded the TR, so we need to notify
 				# the user that it was successfully routed
