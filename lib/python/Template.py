@@ -66,7 +66,7 @@ class TemplateSet:
 				select t._Template_key, t.name, t.value
 				from WTS_Template t, WTS_FieldType f
 				where t._FieldType_key = f._FieldType_key
-					and f.name = "%s"
+					and f.name = '%s'
 				order by t._Template_key
 				''' % fieldType)
 		for row in rows:
@@ -162,7 +162,7 @@ class Template:
 		# Effects: nothing
 		# Throws: nothing
 
-		self.key = row['_Template_key']
+		self.key = row['_template_key']
 		self.name = row['name']
 		self.value = expand (row['value'])
 		return
