@@ -74,6 +74,6 @@ try:
 		
 	# Lastly, go back the required number of screens
 
-	screenlib.gen_GoBack_Screen (back_ct)
+	screenlib.gen_GoTo_Screen ('tr.detail.cgi?TR_Nr=%s' % tr_num)
 except:
 	screenlib.gen_Exception_Screen ('tr.bailout.cgi')
