@@ -360,7 +360,7 @@ class Category:
 		# and add the new staff members
 
 		for staff_key in self.staff.values ():
-			sql_statements.append ('''insert WTS_Routing
+			sql_statements.append ('''insert into WTS_Routing
 				(_Category_key, _Staff_key)
 				values (%d, %d)''' % (self.key, staff_key))
 
