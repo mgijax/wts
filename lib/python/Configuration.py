@@ -63,7 +63,6 @@ except:
 
 import regex
 import string
-# import db	(imported below, in the refresh() method)
 
 #--GLOBAL VARIABLE (treat as a constant)---------------------------------
 
@@ -251,45 +250,6 @@ class Configuration:
 		if self.configuration.has_key ('LD_LIBRARY_PATH'):
 			os.environ['LD_LIBRARY_PATH'] = \
 				self.configuration['LD_LIBRARY_PATH']
-
-		# get the database module
-
-		import db
-
-		# now, contact the database to get the rest of the
-		# configuration information.  each of the DB fields below must
-		# have been defined in the configuration text file.  If an
-		# exception occurs in login, just let it propagate.  (We want
-		# to have it be as specific as possible, which it already is
-		# when it comes from db)
-
-		db.set_sqlLogin (self.configuration ['DB_USER'],
-			self.configuration ['DB_PASSWORD'],
-			self.configuration ['DB_SERVER'],
-			self.configuration ['DB_DATABASE'])
-
-		# run a query to get the configuration info
-
-		qry = '''select _Config_Name, int_value, string_value,
-			date_value from WTS_Config'''
-		results = db.sql (qry, 'auto')
-
-		# now, go through and assign whichever value is filled
-		# in for the corresponding _Config_Name.
-
-		for row in results:
-			if (row ['int_value'] is not None):
-				self.configuration [ row ['_Config_Name'] ] = \
-					row ['int_value']
-			elif (row ['string_value'] is not None):
-				self.configuration [ row ['_Config_Name'] ] = \
-					row ['string_value']
-			elif (row ['date_value'] is not None):
-				self.configuration [ row ['_Config_Name'] ] = \
-					row ['date_value']
-			else:
-				self.configuration [ row ['_Config_Name'] ] = \
-					None
 		return
 
 ### End of Class: Configuration ###
