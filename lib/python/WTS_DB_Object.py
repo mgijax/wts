@@ -166,14 +166,14 @@ class WTS_DB_Object:
 
 		qry = '''select int_value
 			from WTS_Config
-			where _Config_Name="%s"''' % self.key_name
+			where _Config_Name='%s' ''' % self.key_name
 		result = wtslib.sql (qry)
 
 		self.key_value = result[0]['int_value'] + 1
 
 		qry = '''update WTS_Config
 			set int_value = %d
-			where _Config_Name = "%s"''' % (self.key_value,
+			where _Config_Name = '%s' ''' % (self.key_value,
 				self.key_name)
 		result = wtslib.sql (qry)
 
