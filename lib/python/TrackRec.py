@@ -4296,17 +4296,17 @@ def save_WTS_TrackRec (
 			str (CV ['CV_WTS_Status'][values ['status_name']]) + \
 			', ' + \
 			str (CV ['CV_Staff'][values['status_staff_username']]) \
-			+ ', "' + values ['status_set_date'] + '", "' + \
+			+ ", '" + values ['status_set_date'] + "', '" + \
 			wtslib.duplicated_Quotes (values ['tr_title']) \
-			+ '", now(), now(), '
+			+ "', now(), now(), "
 
 		if str (values ['attention_by']) not in ('None',''):
-			qry = qry + '"' + values ['attention_by'] + '", '
+			qry = qry + "'" + values ['attention_by'] + "', "
 		else:
 			qry = qry + ' null, '
 
 		if proj_dir is not None:
-			qry = qry + '"' + proj_dir + '")'
+			qry = qry + "'" + proj_dir + "')"
 		else:
 			qry = qry + ' null)'
 	else:
