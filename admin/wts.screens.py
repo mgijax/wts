@@ -303,21 +303,6 @@ def gen_Home_Page (
 			HTMLgen.Href ('userdocs/faq.html', 'FAQ'),
 			HTMLgen.Small (' - frequently asked questions ' + \
 				'about WTS'),
-			HTMLgen.P ()),
-		Container ( \
-			HTMLgen.Href ('userdocs/usage3.pdf', 'Using WTS'),
-			HTMLgen.Small (' - basic info about how to use WTS'),
-			HTMLgen.P ()),
-		Container (\
-			HTMLgen.Href ('userdocs/releaseNotes.txt',
-				'Release Notes'),
-			HTMLgen.Small (' - explanation of changes in this ' + \
-				'WTS release'),
-			HTMLgen.P ()),
-		Container (\
-			HTMLgen.Href ('system_docs/', 'System Documents'),
-			HTMLgen.Small (' - directory of documents which ' + \
-				'explain the inner workings of WTS'),
 			HTMLgen.P ())
 		]))
 
@@ -349,11 +334,6 @@ def gen_Query_Form (
 	#		Secondary               Secondary_Order
 	#		Tertiary                Tertiary_Order
 	#		Displays
-
-	HELP_FILES = TrackRec.HELP_FILES	# dictionary which maps from
-						# tracking record fieldname to
-						# the name of its associated
-						# help file
 
 	HELP_URL = '../searches/help.cgi?req=%s'	# URL to get help
 
@@ -1281,10 +1261,6 @@ def gen_StatusGrid_Form (
 	# Effects: writes the file "tr.status.grid.html" to "dir"
 	# Throws: nothing
 
-	HELP_FILES = TrackRec.HELP_FILES	# dictionary which maps from
-						# tracking record fieldname to
-						# the name of its associated
-						# help file
 	# build the form with its buttons
 
 	frm = screenlib.WTS_Form (
@@ -1321,36 +1297,29 @@ def gen_StatusGrid_Form (
 	frm.append ('''This form allows you to generate a Status Grid based on
 		your chosen range of dates and type of analysis
 		(by ''',
-	HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'], 'Area'),
+	HTMLgen.Href ('help.cgi?req=Area', 'Area'),
 		' or by ',
-	HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Type'], 'Type'),
+	HTMLgen.Href ('help.cgi?req=Type', 'Type'),
 		').')
 	frm.append (HTMLgen.P())
 	frm.append ('The grid will:', HTMLgen.UL ( [
 		Container ('show a column for each ',
-		HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Status'],
-			'Status')),
+		HTMLgen.Href ('help.cgi?req=Status', 'Status')),
 		Container ('show a row for each ',
-		HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'],
-				'Area'),
+		HTMLgen.Href ('help.cgi?req=Area', 'Area'),
 			' or ',
-			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Type'],
-				'Type'),
+			HTMLgen.Href ('help.cgi?req=Type', 'Type'),
 			', whichever is selected'),
 		Container ('examine TRs which had a ',
-		HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Status'],
-				'Status'),
+		HTMLgen.Href ('help.cgi?req=Status', 'Status'),
 			' change in that date range'),
 		Container ('display in each cell the number of tracking ',
 			'records which finished that date range with the ',
-			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Status'],
-				'Status'),
+			HTMLgen.Href ('help.cgi?req=Status', 'Status'),
 			' corresponding to that column, and which has the ',
-			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Area'],
-				'Area'),
+			HTMLgen.Href ('help.cgi?req=Area', 'Area'),
 			'/',
-			HTMLgen.Href ('../userdocs/help/' + HELP_FILES ['Type'],
-				'Type'),
+			HTMLgen.Href ('help.cgi?req=Type', 'Type'),
 			' of that row')
 		] ))
 	frm.append (HTMLgen.HR())
