@@ -3,7 +3,7 @@
 stylesheet = 'data/wts.css'
 #stylesheet = 'data/masst.css'
 author = 'The Jackson Laboratory'
-email = 'jsb@informatics.jax.org'
+email = 'jon.beal@jax.org'
 bgcolor = '#FFFFFF'			# white
 #bgcolor = '#ccaaaa'			# pinkish
 textcolor = '#000000'			# black
