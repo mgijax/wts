@@ -1030,9 +1030,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 			summary_table.append (HTMLgen.TR (
 				HTMLgen.TD (
-					HTMLgen.Href (HELP_URL % 'Routing',
-						'Route To'),
-					HTMLgen.Text (' '),
+					HTMLgen.Text ('Route To '),
 					HTMLgen.Select (category_list,
 						name='Routing',
 						selected = [ route_to ]) ),
@@ -1052,9 +1050,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 					HTMLgen.Text (' '),
 					HTMLgen.Text (self.data ['TR Nr']) ),
 				HTMLgen.TD (
-					HTMLgen.Href (HELP_URL % 'Forwarding',
-						'Forward TR'),
-					HTMLgen.Text (' '),
+					HTMLgen.Text ('Forward TR '),
 					HTMLgen.Select (category_list,
 						name='Forwarding',
 						selected = [ "don't route" ]))))
@@ -1378,9 +1374,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 
 		addressing_table.append (HTMLgen.TR ( \
 			HTMLgen.TD ( \
-				HTMLgen.Href (HELP_URL % 'Routing',
-					'Route To'),
-				HTMLgen.Text (' '), \
+				HTMLgen.Text ('Route To '), \
 				HTMLgen.Select (category_list,
 					name='Routing',
 					selected = [ route_to ])
