@@ -250,13 +250,13 @@ def gen_Home_Page (
 			'information (for display and edit)'), \
 		HTMLgen.P (),
 		frm),
-		Container (
-			HTMLgen.Href ('searches/tr.status.grid.html',
-				'Status Grid Form'),
-			HTMLgen.Small (''' - generate a grid of Status changes
-				grouped by Area or Type, for a certain time
-				period'''),
-			HTMLgen.P() )
+#		Container (
+#			HTMLgen.Href ('searches/tr.status.grid.html',
+#				'Status Grid Form'),
+#			HTMLgen.Small (''' - generate a grid of Status changes
+#				grouped by Area or Type, for a certain time
+#				period'''),
+#			HTMLgen.P() )
 		] ))
 
 	# section 2 - entering new tracking records
