@@ -4296,17 +4296,17 @@ def save_WTS_TrackRec (
 			str (CV ['CV_WTS_Status'][values ['status_name']]) + \
 			', ' + \
 			str (CV ['CV_Staff'][values['status_staff_username']]) \
-			+ ", '" + values ['status_set_date'] + "', '" + \
+			+ ', "' + values ['status_set_date'] + '", "' + \
 			wtslib.duplicated_Quotes (values ['tr_title']) \
-			+ "', now(), now(), "
+			+ '", now(), now(), '
 
 		if str (values ['attention_by']) not in ('None',''):
-			qry = qry + "'" + values ['attention_by'] + "', "
+			qry = qry + '"' + values ['attention_by'] + '", '
 		else:
 			qry = qry + ' null, '
 
 		if proj_dir is not None:
-			qry = qry + "'" + proj_dir + "')"
+			qry = qry + '"' + proj_dir + '")'
 		else:
 			qry = qry + ' null)'
 	else:
@@ -4523,10 +4523,10 @@ def save_Text_Fields (
 	if method == TR_NEW:
 		for item in text_fields:
 			if not blank (values [item[0]]):
-				queries.append ("""insert into WTS_Text (text_block,
-					_TR_key, text_type) values ('""" + \
+				queries.append ('''insert into WTS_Text (text_block,
+					_TR_key, text_type) values ("''' + \
 					wtslib.duplicated_Quotes ( \
-					values [item [0]]) + "', " + \
+					values [item [0]]) + '", ' + \
 					str (values ['_TR_key']) + ', ' + \
 					str (item [1]) + ')'
 					)
@@ -4556,10 +4556,10 @@ def save_Text_Fields (
 					['_tr_key']) + ') and (text_type = ' + \
 					str (item [1]) + '))')
 			elif old_blank and not new_blank:
-				queries.append ("""insert into WTS_Text (text_block,
-					_TR_key, text_type) values ('""" + \
+				queries.append ('''insert into WTS_Text (text_block,
+					_TR_key, text_type) values ("''' + \
 					wtslib.duplicated_Quotes ( \
-					values [item [0]]) + "', " + \
+					values [item [0]]) + '", ' + \
 					str (values ['_TR_key']) + ', ' + \
 					str (item [1]) + ')'
 					)
@@ -5473,15 +5473,15 @@ def getSqlForTempStatusTable (
 	misc_dates = ''
 	tr_dates = ''
 	if start != '':
-		misc_dates = ' and (misc.set_date >= "%s")' % start
-		tr_dates = ' and (tr.status_set_date >= "%s")' % start
+		misc_dates = " and (misc.set_date >= '%s')" % start
+		tr_dates = " and (tr.status_set_date >= '%s')" % start
 	if stop != '':
-		misc_dates = misc_dates + ' and (misc.set_date <= "%s")' % stop
-		tr_dates = tr_dates + ' and (tr.status_set_date <= "%s")' % stop
+		misc_dates = misc_dates + " and (misc.set_date <= '%s')" % stop
+		tr_dates = tr_dates + " and (tr.status_set_date <= '%s')" % stop
 	misc_dates = misc_dates [5:]
 	tr_dates = tr_dates [5:]
 
-	tbl_root = "#TMP_%s" % os.environ ['REMOTE_USER']
+	tbl_root = "TMP_%s" % os.environ ['REMOTE_USER']
 	tbl = "%s_Status" % tbl_root
 	tbl_1 = "%s_1" % tbl_root
 	tbl_2 = "%s_2" % tbl_root
@@ -5489,31 +5489,31 @@ def getSqlForTempStatusTable (
 	tbl_updates = "%s_update" % tbl_root
 	tbl_inserts = "%s_insert" % tbl_root
 
-	q1 = '''select _TR_key, status_set_date = max(set_date)
-		into %s
+	q1 = '''select _TR_key, max(set_date) as status_set_date
+		into temporary table %s
 		from WTS_Status_History misc
 		where %s
 		group by _TR_key''' % (tbl_1, misc_dates)
 
 	q2 = '''select t1._TR_key, t1.status_set_date, sh._Status_key
-		into %s
+		into temporary table %s
 		from %s t1, WTS_Status_History sh
 		where (t1._TR_key = sh._TR_key) and
 			(t1.status_set_date = sh.set_date)''' % (tbl_2, tbl_1)
 
-	q3 = '''select tr_TR_key = tr._TR_key, res_TR_key = res._TR_key
-		into %s
-		from WTS_TrackRec tr, %s res
-		where (tr._TR_key *= res._TR_key)''' % (tbl_keymap, tbl_2)
+	q3 = '''select tr._TR_key as tr_TR_key, res._TR_key as res_TR_key
+		into temporary table %s
+		from WTS_TrackRec tr
+		left outer join %s res on (tr._TR_key = res._TR_key)''' % (tbl_keymap, tbl_2)
 
 	q4 = '''select tr._TR_key, tr.status_set_date, tr._Status_key
-		into %s
+		into temporary table %s
 		from %s km, WTS_TrackRec tr
 		where (km.tr_TR_key = tr._TR_key) and (km.res_TR_key is not null)
 			and %s''' % (tbl_updates, tbl_keymap, tr_dates)
 
 	q5 = '''select tr._TR_key, tr.status_set_date, tr._Status_key
-		into %s
+		into temporary table %s
 		from %s km, WTS_TrackRec tr
 		where (km.tr_TR_key = tr._TR_key) and (km.res_TR_key is null)
 			and %s''' % (tbl_inserts, tbl_keymap, tr_dates)
@@ -5525,18 +5525,18 @@ def getSqlForTempStatusTable (
 		where (upd._TR_key = %s._TR_key)''' % (tbl_2, tbl_updates,
 			tbl_2)
 
-	q7 = '''insert into %s (_TR_key, _Status_key, status_set_date)
-			select _TR_key, _Status_key, status_set_date
+	q7 = '''insert into %s
+			select _TR_key, status_set_date, _Status_key
 			from %s''' % (tbl_2, tbl_inserts)
 
 	# In the case where a TR had two status changes in the same minute, it
 	# is not possible to tell which was the latter.  So, we arbitrarily
 	# choose the one with the highest key...
 
-	q8 = '''select _TR_key, status_set_date, _Status_key = max (_Status_key)
+	q8 = '''select _TR_key, status_set_date, max (_Status_key) as _Status_key
 		into %s
 		from %s
-		group by _TR_key''' % (tbl, tbl_2)
+		group by _TR_key, status_set_date''' % (tbl, tbl_2)
 
 	q9 = 'drop table %s' % tbl_keymap
 	q10 = 'drop table %s' % tbl_updates
@@ -5591,7 +5591,7 @@ def getStatusTable (
 	TR_info = {}
 	for rec in results [-3]:
 		key = rec ['_tr_key']
-		TR_info [key] = (rec ['_Status_key'], rec ['status_set_date'])
+		TR_info [key] = (rec ['_status_key'], rec ['status_set_date'])
 
 	# extract CV info from the second query above, and build:
 	#	cv_info [cv_key][Status key] = Set of TR with that Status
@@ -5599,7 +5599,7 @@ def getStatusTable (
 
 	cv_info = {}
 	for row in results [-2]:
-		cv_key = row ['_%s_key' % row_type]
+		cv_key = row ['_%s_key' % row_type.lower()]
 		if not cv_info.has_key (cv_key):
 			cv_info [cv_key] = {}
 		status_key = TR_info [row['_tr_key']][0]
