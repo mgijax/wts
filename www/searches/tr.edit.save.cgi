@@ -205,6 +205,9 @@ try:
 				# the user that it was successfully routed
 
 				screenlib.gen_Message_Screen (
-					"TR Forwarded", msg, 2)
+					"TR Forwarded", msg,
+					back_count = 0,
+					load_tr = tr_num
+					)
 except:
 	screenlib.gen_Exception_Screen ('tr.edit.save.cgi')

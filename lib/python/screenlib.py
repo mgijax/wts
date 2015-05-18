@@ -744,12 +744,14 @@ class Message_Screen (WTS_Document):
 	# Effects:	see above
 	# Modifies:	self
 	'''
-	def setup (self, message = '', back_count = 1):
+	def setup (self, message = '', back_count = 1, load_tr = None):
 		'''
 		#
 		# Requires:	message - string containing the message,
 		#		back_count - integer number of screens for the
 		#			ok button to go back.
+		#		load_tr - integer TR number to load, if we
+		#			don't want to go back
 		# Effects:	generates screen-specific info for a simple
 		#		message-notification screen and puts it in self
 		# Modifies:	self
@@ -766,9 +768,16 @@ class Message_Screen (WTS_Document):
 
 		# append the JavaScript code (to go back) to the document
 
-		self.append (HTMLgen.Script (code = \
-			'function go_back () { window.history.go (-' + \
-			str (back_count) + ') }'))
+		go_back = '''function go_back () {
+			window.history.go (-%s);
+			}''' % back_count
+
+		if load_tr != None:
+			go_back = '''function go_back() {
+				window.location.replace("tr.detail.cgi?TR_NR=%s");
+				}''' % load_tr
+
+		self.append (HTMLgen.Script (code = go_back))
 
 		# we need to add an Ok button which references the above
 		# JavaScript.  To be displayed, this button must appear on
@@ -1551,7 +1560,7 @@ def gen_GoTo_Screen (url):
 	doc.write()
 	del doc
 
-def gen_Message_Screen (page_title, message, back_count = 1):
+def gen_Message_Screen (page_title, message, back_count = 1, load_tr = None):
 	''' outputs an HTML screen which presents the given title and message,
 	#	along with an Ok button which goes back the specified number
 	#	of screens.  (serves as a wrapper for the Message_Screen class
@@ -1569,7 +1578,7 @@ def gen_Message_Screen (page_title, message, back_count = 1):
 	# Modifies:	no side effects
 	'''
 	doc = Message_Screen (title = page_title)
-	doc.setup (message, back_count)
+	doc.setup (message, back_count, load_tr)
 
 	# now send the page to stdout and delete it
 
