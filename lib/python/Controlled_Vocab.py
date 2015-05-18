@@ -106,7 +106,7 @@ class Controlled_Vocab:
 		# for CV_Staff, since it has a non-standard ordering and a
 		# non-standard format.
 
-		if table_name == 'CV_Staff':
+		if table_name.lower() == 'cv_staff':
 			# get the table's default key from the environment
 
 			self.def_key = os.environ ['REMOTE_USER']
@@ -403,9 +403,9 @@ def getCVtables (
 	# we need special handling for the CV_Staff table since it
 	# has a non-standard ordering and a non-standard format
 
-	if table_name == 'CV_Staff':
-		columns = [ 'UserName' ]
-		qry = '''select staff_username UserName, active
+	if table_name.lower() == 'cv_staff':
+		columns = [ 'username' ]
+		qry = '''select staff_username as username, active
 			from CV_Staff
 			order by staff_username'''
 		results = wtslib.sql (qry)		# do the query

@@ -3560,7 +3560,11 @@ def build_Query_Table (
 	# add the remaining column headers, each linked to its help file...
 
 	for col in columns:
-		row.append (HTMLgen.TH (HTMLgen.Href (HELP_URL % col, col)))
+		if col == 'TR Nr':
+			helpCol = 'TR_Nr'
+		else:
+			helpCol = col
+		row.append (HTMLgen.TH (HTMLgen.Href (HELP_URL % helpCol, col)))
 	tbl.append (row)
 
 	# now, add one row for each tracking record in the clean results
