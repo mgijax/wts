@@ -165,13 +165,13 @@ def gen_Home_Page (
 	# Show Bug List (include bugs, exclude those with a Status of done,
 	# cancelled or merged)
 
-	inner_list.append (Container ( \
-		HTMLgen.Href ('searches/tr.query.results.cgi?Type=swFix&Not=' +\
-			'Status&Status=done&Status=cancelled&Status=merged',
-			'Show Bug List'),
-		HTMLgen.Small (' - list current tracking records which ' + \
-			'have swFix as a Type'),
-		HTMLgen.P () ))
+#	inner_list.append (Container ( \
+#		HTMLgen.Href ('searches/tr.query.results.cgi?Type=swFix&Not=' +\
+#			'Status&Status=done&Status=cancelled&Status=merged',
+#			'Show Bug List'),
+#		HTMLgen.Small (' - list current tracking records which ' + \
+#			'have swFix as a Type'),
+#		HTMLgen.P () ))
 
 	# Show New Tracking Record List
 
