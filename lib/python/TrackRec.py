@@ -4527,10 +4527,10 @@ def save_Text_Fields (
 	if method == TR_NEW:
 		for item in text_fields:
 			if not blank (values [item[0]]):
-				queries.append ('''insert into WTS_Text (text_block,
-					_TR_key, text_type) values ("''' + \
+				queries.append ("""insert into WTS_Text (text_block,
+					_TR_key, text_type) values ('""" + \
 					wtslib.duplicated_Quotes ( \
-					values [item [0]]) + '", ' + \
+					values [item [0]]) + "', " + \
 					str (values ['_TR_key']) + ', ' + \
 					str (item [1]) + ')'
 					)
