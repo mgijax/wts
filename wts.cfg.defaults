@@ -30,7 +30,7 @@ PYTHON		/usr/local/bin/python
 DATADIR		/mgi/all/wts_projects/
 
 # Page title prefix
-PREFIX		WTS1.8
+PREFIX		WTS2.0
 
 # Name of the command-line executable to generate
 EXE_NAME	wts
