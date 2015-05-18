@@ -809,7 +809,7 @@ class Unlock_Screen (WTS_Document):
 		message = '''The tracking record (TR #%d) is being edited and
                         was %s.  Please press Back to go back to the Detail
 			screen.
-                        Or if have have communicated with the other user and
+                        Or if have communicated with the other user and
                         learned that he/she is no longer editing the TR, you
                         may unlock it by clicking the Unlock button.''' % (
 				tr_nr, exc_value)
