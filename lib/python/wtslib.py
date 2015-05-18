@@ -769,24 +769,26 @@ def send_Mail (
 	send_from = '%s@informatics.jax.org' % send_from
 	send_to = '%s@informatics.jax.org' % send_to
 
-#	global SENDMAIL
-#	p = os.popen ("%s -t" % SENDMAIL, "w")
-#	p.write ("From: %s\n" % send_from)
-#	p.write ("To: %s\n" % send_to)
-#	p.write ("Subject: %s\n" % subject)
-#	p.write ("\n")
-#	p.write ("%s" % message)
-#	return p.close ()
+	to = send_to
+	send_to = []
+
+	for name in to.split(','):
+		name = name.strip()
+		if name.find('@') >= 0:
+			send_to.append(name)
+		else:
+			send_to.append ('%s@informatics.jax.org' % name)
 
 	msg = '''From: %s
 To: %s
 Subject: %s
 
 %s
-''' % (send_from, send_to, subject, message)
+''' % (send_from, ','.join(send_to), subject, message)
 
 	server = smtplib.SMTP('smtp.jax.org')
-	server.sendmail(send_from, send_to, msg)
+	for to_address in send_to:
+		server.sendmail(send_from, to_address, msg)
 	server.quit()
 	return
 
