@@ -3445,7 +3445,7 @@ def sort_results (
 
 				# get the actual value of this field
 
-				value = track_recs [tr][NAME_TO_DB[sorting [i]]]
+				value = track_recs [tr][NAME_TO_DB[sorting [i]].lower()]
 
 				# now, since we're sorting by this field, we
 				# need to handle single-valued controlled
