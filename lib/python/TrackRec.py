@@ -655,6 +655,10 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		s = s + "TR=%s\n\n" % num
 		s = s + ("Title:    %s\n" % self.data ['Title'])
 		s = s + ("Priority: %s\n\n" % self.data ['Priority'])
+		if self.data['Project Definition'] == None:
+			s = s + ("Project Definition:\n-------------------\n\nempty\n")
+			return s
+
 		s = s + ("Project Definition:\n-------------------\n\n%s\n" % \
 			self.data ["Project Definition"][:500])
 		return s
