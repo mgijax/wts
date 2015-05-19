@@ -33,6 +33,7 @@ import cgi
 import copy
 import string
 import Configuration
+import ConfigurationWrapper
 import wtslib		# provides auxiliary functions
 import TrackRec		# provides access to tracking record information and a
 			# means of manipulating tracking record data
@@ -65,7 +66,7 @@ try:
 
 		dir = TrackRec.directoryOf (tr_num)
 		if dir is not None:
-			dir = os.path.join (Configuration.config ['baseURL'],
+			dir = os.path.join (ConfigurationWrapper.config ['baseURL'],
 				dir)
 			if dict.has_key ('doc'):
 				dir = os.path.join (dir, dict ['doc'])
