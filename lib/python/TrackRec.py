@@ -4299,12 +4299,12 @@ def save_WTS_TrackRec (
 			+ "', now(), now(), "
 
 		if str (values ['attention_by']) not in ('None',''):
-			qry = qry + '"' + values ['attention_by'] + '", '
+			qry = qry + "'" + values ['attention_by'] + "', "
 		else:
 			qry = qry + ' null, '
 
 		if proj_dir is not None:
-			qry = qry + '"' + proj_dir + '")'
+			qry = qry + "'" + proj_dir + "')"
 		else:
 			qry = qry + ' null)'
 	else:
