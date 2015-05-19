@@ -1053,6 +1053,8 @@ class TR_Notification_Screen (WTS_Document):
 		#		record and puts it in self
 		# Modifies:	self
 		'''
+		global WTS_HOME_PAGE
+
 		self.title = PREFIX + \
 			': Tracking Record Number Notification Screen'
 
@@ -1075,9 +1077,11 @@ class TR_Notification_Screen (WTS_Document):
 
 		frm = WTS_Form ()
 		frm.append (Button (PREFIX + ' Home', \
-			'window.history.go (-2)'))
-		frm.append (Button ('Create Another New TR', \
-			'window.history.back ()'))
+			'window.location.href="%s"' % WTS_HOME_PAGE))
+		frm.append (Button ('Create Another New TR (Long Form)', \
+			'window.location.href="tr.new.cgi"'))
+		frm.append (Button ('Create Another New TR (Short Form)', \
+			'window.location.href="tr.new.sf.cgi"'))
 		self.append (frm)
 
 ### End of Class: TR_Notification_Screen ###
