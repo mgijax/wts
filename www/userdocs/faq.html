@@ -52,6 +52,8 @@
 	</TABLE><P><HR>
     <LI><B><a name="MSIE">Should I use Microsoft Internet Explorer to access
 	WTS?</a></B><P>
+	<I>Answer is out of date.  Firefox, Chrome, and Safari are likely to
+	work fine.</I><P>
 	In general, <I>no</I>.  IE has a few quirks when editing tracking
 	records that could make it difficult for you.  Due to the way IE
 	caches web pages, you could experience problems with locking tracking
@@ -80,6 +82,7 @@
 	<P><HR>
     <LI><B><a name="cannedQueries">How can I preserve common queries, so I won't
 	need to compose them from the Query Form each time?</a></B><P>
+	<I>Answer is out of date.  The URL for WTS is incorrect and is currently TBD.</I><P>
 	It is now possible to do any query as a GET submission; that is, you
 	can do a query with all the parameters specified in a URL.  Then, you
 	may bookmark that URL or add it to a web page that you maintain.<P>
@@ -188,6 +191,8 @@
 	<P><HR>
     <LI><B><a name="batchIO">How can I make changes to many tracking records
 	without stopping to edit each individually?</a></B><P>
+	<I>Answer is out of date.  This has not been tested for Linux and Postgres.</I>
+	<P>
 	As a result of changes made for tracking records
 	<a href="../searches/tr.detail.cgi?TR_Nr=814">814</a>,
 	<a href="../searches/tr.detail.cgi?TR_Nr=815">815</a>, and
@@ -259,9 +264,11 @@
 	<P><HR>
     <LI><B><a name="commandLine">How can I use the command-line interface?</a>
 	</B><P>
-	The command-line interface is run on titan.  It requires that your
-	environment be configured with a SYBASE variable (/opt/sybase/) and
-	that the wts or masst script be accessible in your PATH.<P>
+	<I>The WTS command-line was not fully tested on Linux and Postgres;
+	options that were tested are listed separately below from those that
+	were not tested (due to lack of recent use).</I><P>
+	The command-line interface is run on mgi-prodapp2.  It requires that your
+	environment be configured with the wts script in your PATH.<P>
 
 	The command-line interface allows you to choose an editor for WTS by
 	specifying its full path in the WTS_EDITOR environment variable.  If
@@ -270,6 +277,17 @@
 
 	Simply invoking <I>wts</I> with no arguments will give you the usage
 	options, of which there are currently sixteen:<P>
+	<I>Tested Options:</I><BR>
+	<OL>
+	<LI><I>wts --routing</I><BR>
+		Allows you to change the e-mail addresses and Areas associated
+		with the various routing categories.<P>
+	<LI><I>wts --unlock &lt;tr #&gt;</I><BR>
+		Unlocks the tracking record with the specified key, no matter
+		who has it locked for editing.  This should only be used when
+		you know that a lock has persisted in error.<P>
+	</OL><P>
+	<I>Untested Options:</I><BR>
 	<OL>
 	<LI><I>wts --addNote &lt;tr #&gt;</I><BR>
 		Starts up your editor to let you type in the text of a
@@ -328,9 +346,6 @@
 		Allows you to query for a certain string in the Title field.
 		Sends to stdout a comma-separated list of TR numbers with
 		Titles which contain the specified string.<P>
-	<LI><I>wts --routing</I><BR>
-		Allows you to change the e-mail addresses and Areas associated
-		with the various routing categories.<P>
 	<LI><I>wts --setField &lt;fieldname&gt; &lt;tr #&gt; &lt;field
 			value&gt;</I><BR>
 		Replaces the current value of the named field in the given TR
@@ -344,10 +359,6 @@
 		Sends to stdout a text representation of a tree showing all
 		the dependencies under the specified tracking record, with
 		the TR # and Title shown for each.<P>
-	<LI><I>wts --unlock &lt;tr #&gt;</I><BR>
-		Unlocks the tracking record with the specified key, no matter
-		who has it locked for editing.  This should only be used when
-		you know that a lock has persisted in error.<P>
 	</OL>
 	 <LI><B><a name="wtsMarkup">How do I use WTS markup?</a></B><P>
 	 	WTS markup allows the user to enter one of several different markup codes
@@ -368,8 +379,10 @@
 
 		The behavior of nested markup, (I.E. \File(\TR(101),foo.txt)) is undefined.
 	 </PRE>
+	<P>
 	 <LI><B><a name="email">How do I update the progress notes field via
 	 	     e-mail?</a></B><P>
+     <I>Answer is out of date.  This feature has not worked for years.</I><P>
 	 WTS Email allows a user to enter messages into the progress notes of a given
 	 TR by sending email to WTS on Titan.  The body of the email will be appended
 	 to the current progress notes with a timestamp and the user id of the sender
