@@ -1,3 +1,11 @@
+TAG: wts-5-2-2-1
+DATE: 06/02/2015
+STAFF: jsb
+CHANGES:
+1) changed to talk to Postgres, rather than Sybase
+2) fixed bug where detail page would not reload after an edit
+3) removed several unused options from home page
+
 TAG: wts-4-3-4-2
 DATE: 05/21/2010
 STAFF: dbm
