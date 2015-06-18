@@ -1944,7 +1944,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 			
 			if not os.path.exists (parent_path):
 				os.mkdir (parent_path)
-				os.chmod (parent_path, 0755)	# rwxr-xr-x
+				os.chmod (parent_path, 0775)	# rwxrwxr-x
 
 				# We need to do two system calls here, one
 				# because python only uses octal mode for chmod
@@ -5073,7 +5073,7 @@ def rebuild_htaccess (
 
 	if not os.path.exists (directory):
 		os.mkdir (directory)
-		os.chmod (directory, 0755)		# rwxr-xr-x
+		os.chmod (directory, 0775)		# rwxrwxr-x
 
 		# We need to do two system calls here, one because python only
 		# uses octal mode for chmod and the sticky bit can't be set
