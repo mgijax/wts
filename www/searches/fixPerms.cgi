@@ -51,9 +51,6 @@ dict = wtslib.FieldStorage_to_Dict (form)	# put it in a dictionary
 
 tr_num = string.atoi (string.strip (dict[dict.keys()[0]]))
 
-tr = TrackRec.TrackRec (tr_num)		# load the tracking record with
-					# the specified number.
-
 d = TrackRec.directoryOf(tr_num)
 
 print 'Content-type: text/html'
