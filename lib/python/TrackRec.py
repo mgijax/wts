@@ -121,6 +121,10 @@ HELP_URL = '../searches/help.cgi?req=%s'	# standard URL string for help
 CHMOD = '/usr/bin/chmod'			# full path to chmod command
 CHGRP = '/usr/bin/chgrp'			# full path to chgrp command
 
+if not os.path.exists(CHMOD):
+	CHMOD = '/bin/chmod'			# Linux path to chmod command
+	CHGRP = '/bin/chgrp'			# Linux path to chgrp command
+
 # "constants" to help us remember the type of a save operation.  (The save
 # method calls several internal-only methods which need to know what type of
 # save operation we are dealing with.)  These constants are used only in this
@@ -4943,10 +4947,10 @@ def directoryOf (
 	#	record key, 2. propagates wtslib.sqlError if errors occur in
 	#	talking to the database
 
-	result = wtslib.sql ('''select directory_variable dir
+	result = wtslib.sql ('''select directory_variable
 				from WTS_TrackRec
 				where _TR_key = %d''' % tr_num)
-	return result [0]['dir']
+	return result [0]['directory_variable']
 
 
 def directoryPath (
