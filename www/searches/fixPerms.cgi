@@ -68,8 +68,6 @@ else:
 		os.system('chmod g+s %s' % d)
 		os.system('chgrp mgi %s' % d)
 		print 'Updated %s' % d
-		os.system('chmod g+s /mgi/all/wts_projects/12100')
-		print 'Also updated 12100'
 	except:
 		print 'Failed to update %s' % d
 
