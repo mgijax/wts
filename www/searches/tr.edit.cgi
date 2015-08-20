@@ -57,7 +57,7 @@ try:
 						# the specified number.
 
 	if dict.has_key('unlock'):
-		tr.unlock()
+		tr.unlock(override = True)
 
 	# Now try to lock that tracking record.  If an exception is raised,
 	# then we know that it has already been locked.  The string returned
