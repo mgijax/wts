@@ -1,3 +1,11 @@
+TAG: wts-5-2-2-3
+DATE: 08/20/2015
+STAFF: jsb
+CHANGES:
+1) fixed unlocking issue through web
+2) fixed chmod/chgrp perms issue on linux
+3) fixed bug which didn't allow users to change passwords
+
 TAG: wts-5-2-2-2
 DATE: 06/18/2015
 STAFF: jsb
