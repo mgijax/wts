@@ -65,8 +65,8 @@ else:
 
 	try:
 		os.chmod(d, 0775)
-		os.system('chmod g+s %s' % d)
-		os.system('chgrp mgi %s' % d)
+		os.system('/bin/chmod g+s %s' % d)
+		os.system('/bin/chgrp mgi %s' % d)
 		print 'Updated %s' % d
 	except:
 		print 'Failed to update %s' % d
