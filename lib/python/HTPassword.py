@@ -22,7 +22,7 @@ error = 'HTPassword.error'		# define the exception for this module
 					# and its possible exception values:
 exc_BadData = 'Error in password file %s'
 exc_CannotLock = 'Cannot lock password file %s'
-exc_CannotWriteLock = 'Cannot write lock file for password file %s'
+exc_CannotWriteLock = 'No permission to create lock file for password file %s'
 
 #-------------------------------------------------------------------------
 # supporting code adapted from htpasswd.c by Rob McCool (which itself
@@ -127,7 +127,13 @@ class HTPassword:
 			# raise an IOError which we catch below...
 
 			if not self.padlock.lock ():
-				raise error, exc_CannotLock % path
+				# if we waited the full time limit and it's
+				# still locked, there's some kind of problem,
+				# so try to force it open
+
+				self.padlock.unlock(force=True)
+				if not self.padlock.lock():
+					raise error, exc_CannotLock % path
 		except IOError:
 			raise error, exc_CannotWriteLock % path
 

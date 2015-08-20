@@ -1,24 +1,21 @@
 #!/usr/local/bin/python
 
 # Name: WriteLock.py
-# Purpose: provides the WriteLock class, which provides a means to lock a file
-#	the file system and write out a new copy
+# Purpose: provides the WriteLock class, which provides a means to use the
+#	presence of one file to indicate that another file is "locked" for
+#	writing and should not be opened by a second process for writing.
 # On Import: seeds the random number generator in the "random" module with the
 #	current time
 # Assumes: all writes to the specified file go through this module
+# Notes: This module was simplified in August 2015 to avoid use of fcntl, as
+#	that was an unnecessary (and not necessarily portable) complication.
+#	Now, if the lock file exists, it's locked.  If it doesn't exist, it's
+#	not locked.  The chance of two users locking it in the exact same
+#	second is remote enough that we'll ignore it.
 
 import os
 import time
 import random
-import fcntl
-#import FCNTL
-
-NONBLOCKING_WRITE = fcntl.F_WRLCK | os.O_NDELAY	# constant indicating
-							# a non-blocking write
-							# operation
-
-TRUE = 1				# define constants for booleans for
-FALSE = 0				# readability
 
 random.seed (int (time.time ()))		# seed random number generator
 
@@ -28,14 +25,12 @@ class WriteLock:
 	#		user of this module can write to the given file at any
 	#		time
 	#	HAS: a status about whether the given file is locked or not
-	#	DOES: lets the user lock, unlock, test the lock status, and
-	#		write to the locked file
+	#	DOES: lets the user lock, unlock, test the lock status
 	# Implementation:
 	#	Methods:
 	#		__init__ (filename to lock)
 	#		lock (milliseconds to wait)
 	#		unlock ()
-	#		write ()
 
 	def __init__ (self, filename):
 		# Purpose: initialize this WriteLock object
@@ -45,26 +40,30 @@ class WriteLock:
 		# Throws: nothing
 
 		self.filename = filename	# remember the filename
-		self.fp = None			# (file ptr) not ready to write
+		self.haveLock = False		# do we have the lock?
 		return
 
 
 	def lock (self,
-		wait_time = 3000	# integer; maximum number of
+		wait_time = 5000	# integer; maximum number of
 					# milliseconds to wait for lock.
-					# default to 3 seconds.
+					# default to 5 seconds.
 		):
 		# Purpose: lock the filename which we gave in the constructor
-		# Returns: TRUE if we lock it successfully, or FALSE if the
+		# Returns: True if we lock it successfully, or False if the
 		#	"wait_time" runs out before we can get it locked
 		# Assumes: current user has permission to lock the file
 		# Effects: If the lock become free before "wait_time" runs out,
-		#	locks the file using the "fcntl" module.
+		#	creates and "locks" the file
 		# Throws: propagates an IOError if the current user does not
 		#	have permission to open "self.filename" for writing.
 		# Notes: If you want to try to lock a file without waiting
 		#	around if it is already locked, you may invoke this
 		#	method with "wait_time" = 0.
+
+		# if this process tries to lock the file twice, skip it
+		if self.haveLock:
+			return
 
 		# get the time remaining...  set to at least 1 ms so we will
 		# try the lock once even if we don't want to wait for it...
@@ -73,74 +72,51 @@ class WriteLock:
 
 		time_left = int (max (1, wait_time))
 
-		# Get a temporary pointer to the specified file, opened for
-		# writing.  Then get its file number.  If the file cannot be
-		# opened for writing, this will raise an IOError.
+		while time_left > 0:
+			# if the file is already locked (by someone else),
+			# then we need to wait a little and try again
 
-		temp_fp = open (self.filename, 'w')		# file pointer
-		temp_nr = temp_fp.fileno ()			# file number
-
-		# Now, let's loop until the timer expires.  With each iteration,
-		# see if it is locked.  If not, lock it and return TRUE.  If it
-		# is locked, wait a random portion of the time left and try
-		# again.
-
-		while (time_left > 0):
-			# if we try to lock the file and fail, it will
-			# generate an IOError exception
-
-			try:
-				fcntl.flock (temp_nr, NONBLOCKING_WRITE)
-				self.fp = temp_fp
-				return TRUE
-			except IOError:
-				to_wait = random.randint (1, time_left)
+			if self.isLocked():
+				# wait up to a half second before trying again
+				to_wait = random.randint(1, min(time_left,500))
 				time.sleep (to_wait / 1000.0)
 				time_left = time_left - to_wait
-		temp_fp.close ()
-		return FALSE
+			else:
+				fp = open(self.filename, 'w')
+				fp.write('locked\n')
+				fp.close()
+
+				os.chmod(self.filename, 0x666)
+				
+				self.haveLock = True
+				return True
+		return False
 
 
 	def isLocked (self):
 		# Purpose: test whether the file given in the constructor is
 		#	locked
-		# Returns: TRUE if it is locked, FALSE if it is not
+		# Returns: True if it is locked, False if it is not
 		# Assumes: nothing
 		# Effects: nothing
 		# Throws: nothing
 
-		return (self.fp != None)
+		return os.path.exists(self.filename)
 
 
-	def unlock (self):
-		# Purpose: unlock and close the file given in the constructor
-		# Returns: boolean -- TRUE if we unlocked the file, FALSE if not
+	def unlock (self, force=False):
+		# Purpose: unlock (remove) the file given in the constructor
+		# Returns: boolean -- True if we unlocked the file, False if not
 		# Assumes: nothing
 		# Effects: If the file specified in the constructor is locked,
 		#	unlock it.
 		# Throws: nothing
+		# Notes: if 'force' is True, then we unlock it regardless of
+		#	whether we own the lock or not.
 
-		if self.isLocked ():
-			self.fp.close ()	# close the file (which also
-						# unlocks it), then erase the
-			self.fp = None		# file pointer
-			return TRUE
-		return FALSE
-
-
-	def write (self,
-		s	# string to be written to the locked file
-		):
-		# Purpose: write the string "s" to the locked file
-		# Returns: boolean -- TRUE if we wrote "s" out okay, FALSE if
-		#	we did not
-		# Assumes: nothing
-		# Effects: appends string "s" to the file we are building
-		# Throws: nothing
-		# Notes: A newline is not appended; if you want one, add it
-		#	yourself.
-
-		if self.isLocked ():
-			self.fp.write (s)
-			return TRUE
-		return FALSE
+		if self.isLocked():
+			if force or self.haveLock:
+				os.remove(self.filename)
+				self.haveLock = False
+				return True
+		return False
