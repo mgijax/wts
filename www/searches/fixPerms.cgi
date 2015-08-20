@@ -49,7 +49,7 @@ dict = wtslib.FieldStorage_to_Dict (form)	# put it in a dictionary
 # get the number of the tracking record we need to edit (specified in
 # the 'TrackRec' field).
 
-tr_num = string.atoi (string.strip (dict ['TR_Nr']))
+tr_num = string.atoi (string.strip (dict[dict.keys()[0]]))
 
 tr = TrackRec.TrackRec (tr_num)		# load the tracking record with
 					# the specified number.
