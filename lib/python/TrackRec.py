@@ -4950,6 +4950,10 @@ def directoryOf (
 	result = wtslib.sql ('''select directory_variable
 				from WTS_TrackRec
 				where _TR_key = %d''' % tr_num)
+
+	if not result:
+		return '/mgi/all/wts_projects/%d00/%d' % (tr_num / 100, tr_num)
+
 	return result [0]['directory_variable']
 
 
