@@ -654,7 +654,7 @@ class TrackRec (WTS_DB_Object.WTS_DB_Object):
 		else:
 			host = Configuration.config ['projectDirectoryServer']
 
-		s = "TR %s -- http://%s/wts/searches/tr.detail.cgi?" % \
+		s = "TR %s -- http://%s/searches/tr.detail.cgi?" % \
 			(num, host)
 		s = s + "TR=%s\n\n" % num
 		s = s + ("Title:    %s\n" % self.data ['Title'])
