@@ -231,13 +231,13 @@ def getActiveTRs (tr2top10) :
         r['directory_url'] = '' if r['directory_variable'] in [None,"None"] else WTS_DIR + r['directory_variable']
         r['summary'] = '%s (TR%d)' % (r['tr_title'], r['_tr_key'])
         pdir = int(r['_tr_key'] / 100) * 100
-        r['description'] = WTS_DIR + ("archive/%s/TR%d.html" % (pdir, r['_tr_key']))
+        r['description'] = WTS_DIR + ("archive/%s/TR%d.html" % (pdir, r['_tr_key'])) + '\nRequested by: ' + r['requestedBy']
         r['labels'] = ['WTS1', 'Top_10' if t10pi else '']
     return recs
 
 def quote (v) :
     vs = str(v)
-    if '"' in vs or ',' in vs:
+    if '"' in vs or ',' in vs or '\n' in vs:
         return '"%s"' % vs.replace('"', '""')
     else:
         return vs
