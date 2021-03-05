@@ -11,28 +11,38 @@ import math
 import os
 from urllib.request import Request, urlopen
 from argparse import ArgumentParser
+import db
+
+db.set_sqlServer('bhmgidb01.jax.org')
+db.set_sqlDatabase('prod')
+db.set_sqlUser('mgd_public')
+db.set_sqlPassword('mgdpub')
 
 url_tmplt = 'http://wts.informatics.jax.org/searches/tr.detail.cgi?TR_Nr=%d'
 trfile_tmplt = 'TR%d.html'
 hdr = { "Authorization": "Basic amVyOmplbjY4Yg==" }
 not_found = b'WTS2.0: Cant Find Tracking Record'
+ARCHIVE_DIR = '/mgi/all/wts_projects/archive'
 
 def getOpts () :
+    q = '''SELECT min(_tr_key), max(_tr_key) FROM "wts"."wts_trackrec";'''
+    minmax = db.sql(q)[0]
+    #
     parser = ArgumentParser()
     parser.add_argument(
       "-m", "--minTR",
-      default=1,
+      default=minmax['min'],
       type=int,
-      help="Minimum TR number. Default=1.")
+      help="Minimum TR number. Default=%(default)d.")
     parser.add_argument(
       "-M", "--maxTR",
-      default=13600,
+      default=minmax['max'],
       type=int,
-      help="Maximum TR number. Default=maxiumum TR in WTS.")
+      help="Maximum TR number. Default=%(default)d.")
     parser.add_argument(
       "-d", "--directory",
-      default="./archive",
-      help="Output directory. Default=./archive")
+      default=ARCHIVE_DIR,
+      help="Output directory. Default=%(default)s")
     return parser.parse_args()
 
 def archiveTR (tr_key, archive_dir) :
@@ -43,7 +53,7 @@ def archiveTR (tr_key, archive_dir) :
     fd.close()
     if page.find(not_found) >= 0:
         # tr not valid
-        print('?', end='')
+        sys.stdout.write('? ')
         return
     intermediateDir = os.path.join(archive_dir, str(100 * math.floor(tr_key / 100)))
     os.makedirs(intermediateDir, exist_ok=True)
@@ -59,12 +69,12 @@ def main () :
     while tr_key <= tr_max_key:
         archiveTR(tr_key, opts.directory)
         if tr_key % 50 == 0:
-            print(tr_key, end=' ')
+            sys.stdout.write(str(tr_key) + ' ')
             if tr_key % 1000 == 0:
-                print()
+                sys.stdout.write('\n')
             sys.stdout.flush()
         tr_key += 1
-    print()
+    sys.stdout.write('\n')
 
 #
 main()
