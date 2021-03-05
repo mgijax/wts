@@ -39,25 +39,25 @@ def mapTop10PI (pi) :
 
 def mapWtsStatus (status) :
     map = {
-        "new"          : "OPEN",
-        "notScheduled" : "PI_REVIEWED",
-        "analysis"     : "REQUIREMENTS",
-        "in-progress"  : "IN PROGRESS",
-        "test"         : "IN PROGRESS",
-        "ready"        : "PI_REVIEWED",
-        "monitoring"   : "REQUIREMENTS",
-        "waiting"      : "REQUIREMENTS",
-        "PI-decide"    : "PI-DECIDE",
-        "tabled"       : "CLOSED",    # yes?
-        "merged"       : "CLOSED",    # yes?
-        "done"         : "RESOLVED",
-        "cancelled"    : "CANCELED", # one L or two?
+        "new"          : "Open",
+        "notScheduled" : "IS-READY",
+        "analysis"     : "Requirements",
+        "in-progress"  : "In Progress",
+        "test"         : "In Progress",
+        "ready"        : "IS-READY",
+        "monitoring"   : "Requirements",
+        "waiting"      : "Requirements",
+        "PI-decide"    : "PI-Decide",
+        "tabled"       : "Closed",    # yes?
+        "merged"       : "Closed",    # yes?
+        "done"         : "Closed",
+        "cancelled"    : "Closed", # one L or two?
         #
-        "design"       : "REQUIREMENTS",      # yes?
-        "review"       : "PI_REVIEWED",       # yes?
-        "scheduled"    : "PI_REVIEWED",    # yes?
-        "preliminary"  : "OPEN", # yes?
-        "study"        : "OPEN",       # yes?
+        "design"       : "Requirements",      # yes?
+        "review"       : "In Progress",       # yes?
+        "scheduled"    : "IS-READY",    # yes?
+        "preliminary"  : "Open", # yes?
+        "study"        : "Open",       # yes?
     }
     return map[status]
 
