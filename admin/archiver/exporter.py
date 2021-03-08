@@ -33,7 +33,7 @@ def mapTop10PI (pi) :
         "judy"    : "Judy",
         "martin"  : "Martin",
         "richard" : "Richard",
-        "bug"     : "",             # IS THIS OK??
+        "bug"     : "",  # ok?
     }
     return m[pi.lower()]
 
@@ -48,18 +48,45 @@ def mapWtsStatus (status) :
         "monitoring"   : "Requirements",
         "waiting"      : "Requirements",
         "PI-decide"    : "PI-Decide",
-        "tabled"       : "Closed",    # yes?
-        "merged"       : "Closed",    # yes?
+        "design"       : "Requirements",# ok?
+        "review"       : "In Progress", # ok?
+        "scheduled"    : "IS-READY",    # ok?
+        "preliminary"  : "Open",        # ok?
+        "study"        : "Open",        # ok?
+        # for completeness... (not actually used, because we're only importing open TRs)
+        "tabled"       : "Closed",
+        "merged"       : "Closed",
         "done"         : "Closed",
-        "cancelled"    : "Closed", # one L or two?
-        #
-        "design"       : "Requirements",      # yes?
-        "review"       : "In Progress",       # yes?
-        "scheduled"    : "IS-READY",    # yes?
-        "preliminary"  : "Open", # yes?
-        "study"        : "Open",       # yes?
+        "cancelled"    : "Closed",
     }
     return map[status]
+
+def mapWtsArea (area) :
+    map = {
+    "backend/custom_sql"     : "Backend/Custom_SQL",
+    "backend/data_cleanup"   : "Backend/Data_Cleanup",
+    "backend/load"           : "Backend/Load",
+    "backend/public_reports" : "Backend/Public_Reports",
+    "backend/pwi"            : "Backend/PWI",
+    "backend/qc_reports"     : "Backend/QC_Reports",
+    "dataMigration"          : "Data",
+    "dbAdmin"                : "DB_Admin",
+    "EIPerms"                : "Unknown",       # ok?
+    "faq"                    : "User_Support",  # ok?
+    "frontend/wi_pub"        : "Frontend/WI_Pub",
+    "mgihome"                : "Frontend/WI_Pub", # ok?
+    "misc"                   : "Misc",
+    "mouseBlast"             : "Unknown",       # ok?
+    "mtb"                    : "Unknown",       # ok?
+    "schema"                 : "DB_Admin",      # ok?
+    "seAdmin"                : "Unknown",       # ok?
+    "seInfrastructure"       : "Unknown",       # ok?
+    "unknown"                : "Unknown",
+    "user_support"           : "User_Support",
+    "wi"                     : "Frontend/WI_Pub",
+    "wi-prod"                : "Backend/PWI",
+    }
+    return map[area]
 
 def mapWtsPriority (priority) :
     map = {
@@ -143,7 +170,7 @@ def getAreas () :
         '''
     tr2areas = {}
     for r in db.sql(q_areas):
-        tr2areas.setdefault(r['_tr_key'], []).append(r['area_name'])
+        tr2areas.setdefault(r['_tr_key'], []).append(mapWtsArea(r['area_name']))
     return tr2areas
 
 def getStatusHistory () :
@@ -190,6 +217,7 @@ def getRequestedBy () :
     return tr2requestors
 
 def getActiveTRs (tr2top10) :
+    global maxAreas
     tr2requestors = getRequestedBy()
     tr2status = getStatusHistory()
     tr2areas = getAreas()
@@ -215,6 +243,7 @@ def getActiveTRs (tr2top10) :
         ORDER BY t._tr_key
         '''
     recs = db.sql(q_activeTRs)
+    maxAreas = 0
     for r in recs:
         r['requestedBy'] = tr2requestors.get(r['_tr_key'],"")
         #
@@ -224,6 +253,7 @@ def getActiveTRs (tr2top10) :
         r['piSort'] = t10sort
         #
         r['areas'] = tr2areas.get(r['_tr_key'],[])
+        maxAreas = max(maxAreas, len(r['areas']))
         r['statusHistory'] = tr2status.get(r['_tr_key'],[])
         r['top10'] = tr2top10.get(r['_tr_key'], ("",""))
         r['status_name'] = mapWtsStatus(r['status_name'])
@@ -247,6 +277,8 @@ def printCsv (rec) :
     print(line)
 
 def printTR (tr) :
+    global maxAreas
+    areas = tr['areas'] + (maxAreas - len(tr['areas'])) * ['']
     rec = [
         tr['summary'],
         tr['description'],
@@ -257,10 +289,11 @@ def printTR (tr) :
         tr['priority'],
         tr['labels'][0],
         tr['labels'][1],
-    ]
+    ] + areas
     printCsv(rec)
 
-def main () :
+def printHeaderLine ():
+    global maxAreas
     colHdrs = [
         "Summary",
         "Description",
@@ -271,10 +304,14 @@ def main () :
         "Priority",
         "Labels",
         "Labels",
-    ]
+    ] + maxAreas * ['Components']
     printCsv(colHdrs)
+
+def main () :
     tr2top10 = getTop10(sys.argv[1])
-    for r in getActiveTRs(tr2top10):
+    for i,r in enumerate(getActiveTRs(tr2top10)):
+        if i == 0:
+            printHeaderLine()
         printTR(r)
 
 ###
